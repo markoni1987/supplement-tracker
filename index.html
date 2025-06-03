@@ -29,6 +29,18 @@
       gap: 1em;
       margin-bottom: 1em;
     }
+    .day-selector button {
+      padding: 0.5em 1em;
+      border-radius: 10px;
+      background-color: #444;
+      color: #fff;
+      border: none;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .day-selector button:hover {
+      background-color: #666;
+    }
     .supplement {
       display: flex;
       justify-content: space-between;
@@ -60,6 +72,8 @@
       display: flex;
       justify-content: space-between;
       margin-top: 1em;
+      flex-wrap: wrap;
+      gap: 0.5em;
     }
     .action-buttons button {
       padding: 0.5em 1em;
@@ -67,6 +81,10 @@
       background-color: #333;
       color: #fff;
       border: none;
+      cursor: pointer;
+    }
+    .hidden-input {
+      display: none;
     }
   </style>
 </head>
@@ -76,14 +94,15 @@
   </header>
   <div class="container">
     <div class="day-selector">
-      <button onclick="setDayType('training')">Training</button>
-      <button onclick="setDayType('rest')">Ruhetag</button>
+      <button onclick="setDayType('training')">🏋️ Training</button>
+      <button onclick="setDayType('rest')">🛌 Ruhetag</button>
     </div>
     <div id="supplements"></div>
     <textarea id="notes" placeholder="Notizen für heute..."></textarea>
     <div class="action-buttons">
-      <button onclick="exportData()">Daten exportieren</button>
-      <input type="file" accept=".json" onchange="importData(event)" />
+      <button onclick="exportData()">📤 Daten exportieren</button>
+      <button onclick="document.getElementById('fileInput').click()">📥 Daten importieren</button>
+      <input id="fileInput" class="hidden-input" type="file" accept=".json" onchange="importData(event)" />
     </div>
   </div>
   <script>
