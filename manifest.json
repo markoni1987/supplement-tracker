@@ -1,11 +1,11 @@
 {
   "name": "Supplement Tracker",
   "short_name": "SuppTracker",
-  "description": "Dein persönlicher Supplement-Planer mit Erinnerungen.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#121212",
+  "description": "Dein persönlicher Supplement Planer mit Pausenzyklen.",
   "icons": [
     {
       "src": "icon.png",
