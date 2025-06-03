@@ -110,21 +110,24 @@
     <h1>Supplement Tracker</h1>
     <span class="header-icon">📈</span>
   </header>
+
   <div class="container">
     <div class="day-selector">
       <button onclick="setDayType('training')">🏋️ Training</button>
       <button onclick="setDayType('rest')">🛌 Ruhetag</button>
     </div>
+
     <div id="supplements"></div>
+
     <textarea id="notes" placeholder="Notizen für heute..."></textarea>
+
     <div class="action-buttons">
       <button onclick="exportData()">📤 Daten exportieren</button>
       <button onclick="document.getElementById('fileInput').click()">📥 Daten importieren</button>
       <input id="fileInput" class="hidden-input" type="file" accept=".json" onchange="importData(event)" />
     </div>
   </div>
-  <script>
-    // Dein JavaScript bleibt wie bisher an anderer Stelle eingebunden oder ergänzt
-  </script>
+
+  <script src="script.js"></script>
 </body>
 </html>
