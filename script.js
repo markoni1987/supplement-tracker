@@ -4,57 +4,7 @@ const supplementsData = [
     iconLeft: "🥤",
     iconRight: "⏰",
     timing: "morning",
-    pause: false,
     restDay: true
-  },
-  {
-    name: "Creatin",
-    iconLeft: "💪",
-    iconRight: "🏃",
-    timing: "post",
-    pauseCycle: { weeksOn: 6, weeksOff: 2 },
-    restDay: false
-  },
-  {
-    name: "Citrullin",
-    iconLeft: "💪",
-    iconRight: "🏃",
-    timing: "pre",
-    pauseCycle: { weeksOn: 6, weeksOff: 0 },
-    restDay: false
-  },
-  {
-    name: "Whey Night",
-    iconLeft: "🥤😴",
-    iconRight: "😴",
-    timing: "night",
-    pause: false,
-    restDay: false
-  },
-  {
-    name: "Omega 3",
-    iconLeft: "🧠",
-    iconRight: "🍽️",
-    timing: "flexible",
-    pauseCycle: { weeksOn: 6, weeksOff: 1 },
-    restDay: true
-  },
-  {
-    name: "Vitamin D3",
-    iconLeft: "🦴",
-    iconRight: "🌞",
-    timing: "morning",
-    pauseCycle: { weeksOn: 8, weeksOff: 2 },
-    restDay: true
-  },
-  {
-    name: "Magnesium",
-    iconLeft: "💤",
-    iconRight: "🌙",
-    timing: "night",
-    pause: false,
-    restDay: true,
-    restSkip: ["Donnerstag"]
   },
   {
     name: "Vitamin B12",
@@ -69,8 +19,54 @@ const supplementsData = [
     iconLeft: "🧘",
     iconRight: "🌙",
     timing: "night",
-    pauseCycle: { weeksOn: 6, weeksOff: 2 },
-    restDay: true
+    restDay: true,
+    pauseCycle: { weeksOn: 6, weeksOff: 2 }
+  },
+  {
+    name: "Vitamin D3",
+    iconLeft: "🦴",
+    iconRight: "🌞",
+    timing: "morning",
+    restDay: true,
+    pauseCycle: { weeksOn: 8, weeksOff: 2 }
+  },
+  {
+    name: "Omega 3",
+    iconLeft: "🧠",
+    iconRight: "🍽️",
+    timing: "flexible",
+    restDay: true,
+    pauseCycle: { weeksOn: 6, weeksOff: 1 }
+  },
+  {
+    name: "Magnesium",
+    iconLeft: "💤",
+    iconRight: "🌙",
+    timing: "night",
+    restDay: true,
+    restSkip: ["Donnerstag"]
+  },
+  {
+    name: "Creatin",
+    iconLeft: "💪",
+    iconRight: "🏃",
+    timing: "post",
+    restDay: false,
+    pauseCycle: { weeksOn: 6, weeksOff: 2 }
+  },
+  {
+    name: "Citrullin",
+    iconLeft: "💪",
+    iconRight: "🏃",
+    timing: "pre",
+    restDay: false
+  },
+  {
+    name: "Whey Night",
+    iconLeft: "🥤😴",
+    iconRight: "😴",
+    timing: "night",
+    restDay: false
   }
 ];
 
@@ -84,12 +80,16 @@ function updateDisplay() {
   const today = new Date();
   const weekday = today.toLocaleDateString("de-DE", { weekday: "long" });
 
-  supplementsData.forEach(sup => {
+  const timingOrder = { morning: 1, flexible: 2, pre: 3, post: 4, night: 5 };
+  const sortedSupplements = [...supplementsData].sort((a, b) => {
+    return timingOrder[a.timing] - timingOrder[b.timing];
+  });
+
+  sortedSupplements.forEach(sup => {
     const isRest = currentDayType === "rest";
     const restSkip = sup.restSkip || [];
 
     if ((isRest && !sup.restDay) || (restSkip.includes(weekday))) return;
-
     if (sup.days && !sup.days.includes(weekday)) return;
 
     const cycleKey = sup.name;
@@ -113,8 +113,9 @@ function updateDisplay() {
       <div>${sup.iconLeft} ${sup.name}</div>
       <div>${paused ? "⏸️" : sup.iconRight}</div>
     `;
-    if (sup.name === "Whey Shake" && isRest) {
-      list.prepend(supplementDiv);
+
+    if (isRest && sup.name === "Whey Shake") {
+      list.prepend(supplementDiv); // Shake oben bei Ruhetagen
     } else {
       list.appendChild(supplementDiv);
     }
