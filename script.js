@@ -1,13 +1,13 @@
 const allSupplements = [
-  { name: "Vitamin B12", icons: ["🩸", "⏰"], timing: "morning", restDay: true },
-  { name: "Ashwagandha", icons: ["🧘", "⏰"], timing: "morning", restDay: true },
-  { name: "D3 + K2", icons: ["🦴", "⏰"], timing: "morning", restDay: true },
-  { name: "Omega 3", icons: ["🧠", "⏰"], timing: "morning", restDay: true },
-  { name: "Magnesium", icons: ["💤", "🌙"], timing: "earlyevening", restDay: true },
-  { name: "Creatin", icons: ["🏋️", "🏃"], timing: "afterTraining", restDay: false },
-  { name: "Citrullin", icons: ["💪", "🏃"], timing: "beforeTraining", restDay: false },
-  { name: "Whey Shake", icons: ["🥤", "🤯"], timing: "afterTraining", restDay: true },
-  { name: "Whey Night", icons: ["🥤😴", "😴"], timing: "evening", restDay: false }
+  { name: "Whey Shake", icons: ["🥤", "🤯"], priority: 10, restDay: true },
+  { name: "Vitamin B12", icons: ["🩸", "⏰"], priority: 1, restDay: true },
+  { name: "Ashwagandha", icons: ["🧘", "⏰"], priority: 2, restDay: true },
+  { name: "D3 + K2", icons: ["🦴", "⏰"], priority: 3, restDay: true },
+  { name: "Omega 3", icons: ["🧠", "⏰"], priority: 4, restDay: true },
+  { name: "Magnesium", icons: ["💤", "🌙"], priority: 5, restDay: true },
+  { name: "Citrullin", icons: ["💪", "🏃"], priority: 6, restDay: false },
+  { name: "Creatin", icons: ["🏋️", "🏃"], priority: 7, restDay: false },
+  { name: "Whey Night", icons: ["🥤😴", "😴"], priority: 8, restDay: false }
 ];
 
 let currentDayType = "training";
@@ -22,24 +22,17 @@ function renderSupplements() {
   const container = document.getElementById("supplements");
   container.innerHTML = "";
 
-  const supplements = allSupplements.filter(s => {
-    if (currentDayType === "rest") {
-      if (!s.restDay) return false;
-      if (s.name === "Whey Shake") {
-        s.icons[1] = "⏰";
-        s.timing = "morning";
+  const supplements = allSupplements
+    .filter(s => currentDayType === "rest" ? s.restDay : true)
+    .map(s => {
+      const clone = { ...s };
+      if (currentDayType === "rest" && clone.name === "Whey Shake") {
+        clone.priority = 0;
+        clone.icons[1] = "⏰";
       }
-    } else {
-      if (s.name === "Whey Shake") {
-        s.icons[1] = "🤯";
-        s.timing = "afterTraining";
-      }
-    }
-    return true;
-  });
-
-  const order = { morning: 1, beforeTraining: 2, earlyevening: 3, afterTraining: 4, evening: 5 };
-  supplements.sort((a, b) => order[a.timing] - order[b.timing]);
+      return clone;
+    })
+    .sort((a, b) => a.priority - b.priority);
 
   supplements.forEach(supp => {
     const id = `${currentDayType}_${supp.name}`;
