@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Supplement Tracker</title>
+  <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon.png" />
+  <meta name="theme-color" content="#121212" />
   <style>
     body {
       margin: 0;
@@ -54,6 +56,18 @@
       color: #f5f5f5;
       border: none;
     }
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1em;
+    }
+    .action-buttons button {
+      padding: 0.5em 1em;
+      border-radius: 10px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+    }
   </style>
 </head>
 <body>
@@ -67,9 +81,26 @@
     </div>
     <div id="supplements"></div>
     <textarea id="notes" placeholder="Notizen für heute..."></textarea>
+    <div class="action-buttons">
+      <button onclick="exportData()">Daten exportieren</button>
+      <input type="file" accept=".json" onchange="importData(event)" />
+    </div>
   </div>
-
   <script>
+    const defaultSupplementPlan = [
+      { name: "Vitamin B12", time: "⏰", icon: "🩸", cycle: false },
+      { name: "Ashwagandha", time: "⏰", icon: "🧘", cycle: { on: 42, off: 14, key: "ashwagandha" } },
+      { name: "D3 + K2", time: "⏰", icon: "🦴", cycle: { on: 56, off: 14, key: "d3" } },
+      { name: "Omega 3", time: "⏰", icon: "🧠", cycle: { on: 42, off: 7, key: "omega" } },
+      { name: "Magnesium", time: "🌙", icon: "💤", cycle: false },
+      { name: "Creatin", time: "🏃", icon: "🏋️", cycle: { on: 42, off: 14, key: "creatine" }, onlyTraining: true },
+      { name: "Citrullin", time: "🏃", icon: "💪", cycle: false, onlyTraining: true },
+      { name: "Whey Shake", time: "🤯", icon: "🥤", cycle: false, swapTimeOnRest: "⏰" },
+      { name: "Whey Night", time: "😴", icon: "🥤💤", cycle: false, onlyTraining: true }
+    ];
+
+    let supplementPlan = [...defaultSupplementPlan];
+
     const dayData = JSON.parse(localStorage.getItem('trackerData')) || {
       dayCount: 0,
       cycles: {
@@ -81,31 +112,32 @@
       history: []
     };
 
-    const supplementPlan = [
-      { name: "Vitamin B12", time: "⏰", icon: "🩸", cycle: false },
-      { name: "Ashwagandha", time: "⏰", icon: "🧘", cycle: { on: 42, off: 14, key: "ashwagandha" } },
-      { name: "D3 + K2", time: "⏰", icon: "🦴", cycle: { on: 56, off: 14, key: "d3" } },
-      { name: "Omega 3", time: "⏰", icon: "🧠", cycle: { on: 42, off: 7, key: "omega" } },
-      { name: "Magnesium", time: "🌙", icon: "💤", cycle: false },
-      { name: "Creatin", time: "🏃", icon: "🏋️", cycle: { on: 42, off: 14, key: "creatine" } },
-      { name: "Citrullin", time: "🏃", icon: "💪", cycle: false },
-      { name: "Whey Shake", time: "🤯", icon: "🥤", cycle: false },
-      { name: "Whey Night", time: "😴", icon: "🥤💤", cycle: false }
-    ];
-
     function setDayType(type) {
       dayData.dayCount++;
       const today = { type, supplements: {}, notes: "" };
+      supplementPlan = [...defaultSupplementPlan];
+      if (type === 'rest') {
+        supplementPlan.sort((a, b) => {
+          if (a.name === "Whey Shake") return -1;
+          if (b.name === "Whey Shake") return 1;
+          return 0;
+        });
+      }
       supplementPlan.forEach(sup => {
+        const key = sup.name;
+        if (sup.onlyTraining && type === 'rest') {
+          today.supplements[key] = false;
+          return;
+        }
         if (sup.cycle) {
           const cycleDay = ++dayData.cycles[sup.cycle.key];
           const paused = cycleDay > sup.cycle.on && cycleDay <= (sup.cycle.on + sup.cycle.off);
           if (cycleDay > (sup.cycle.on + sup.cycle.off)) {
             dayData.cycles[sup.cycle.key] = 1;
           }
-          today.supplements[sup.name + sup.time] = !paused;
+          today.supplements[key] = !paused;
         } else {
-          today.supplements[sup.name + sup.time] = true;
+          today.supplements[key] = true;
         }
       });
       dayData.history.push(today);
@@ -117,13 +149,18 @@
       const container = document.getElementById('supplements');
       container.innerHTML = '';
       supplementPlan.forEach(sup => {
-        const isActive = today.supplements[sup.name + sup.time];
+        const key = sup.name;
+        const isActive = today.supplements[key];
+        let displayTime = sup.time;
+        if (sup.swapTimeOnRest && today.type === 'rest') {
+          displayTime = sup.swapTimeOnRest;
+        }
         const div = document.createElement('div');
         div.className = 'supplement' + (isActive ? '' : ' paused');
         div.innerHTML = `
           <label>
             <input type="checkbox" ${!isActive ? 'disabled' : ''}>
-            ${sup.icon} ${sup.name} <span class="icon">${isActive ? sup.time : '⏸️'}</span>
+            ${sup.icon} ${sup.name} <span class="icon">${isActive ? displayTime : '⏸️'}</span>
           </label>
         `;
         container.appendChild(div);
@@ -131,8 +168,37 @@
       document.getElementById('notes').value = today.notes;
     }
 
+    function exportData() {
+      const blob = new Blob([JSON.stringify(dayData)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'trackerData.json';
+      a.click();
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const content = e.target.result;
+        try {
+          const data = JSON.parse(content);
+          localStorage.setItem('trackerData', JSON.stringify(data));
+          location.reload();
+        } catch (err) {
+          alert('Fehler beim Import: Ungültige Datei');
+        }
+      };
+      reader.readAsText(file);
+    }
+
     if (dayData.history.length > 0) {
       renderSupplements(dayData.history[dayData.history.length - 1]);
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
     }
   </script>
 </body>
