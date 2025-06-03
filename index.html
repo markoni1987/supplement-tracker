@@ -65,17 +65,18 @@
         { name: "Vitamin B12", icon: "🩸" },
         { name: "Ashwagandha", icon: "🧘" }
       ],
+      protein: [
+        { name: "Whey Protein", icon: "🥤" }
+      ],
       training: [
         { name: "Creatin", icon: "🏋️" },
         { name: "Citrullin", icon: "💪" },
-        { name: "Whey Protein", icon: "🥤" },
         { name: "Whey Protein (Abend)", icon: "🥤😴" }
       ]
     };
 
-    function createChecklist(items, showSleepShake = false) {
+    function createChecklist(items) {
       return items.map(sup => {
-        if (sup.name === "Whey Protein (Abend)" && !showSleepShake) return "";
         const id = "sup_" + sup.name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
         return `
           <label class="supplement-label">
@@ -92,9 +93,17 @@
       splitDiv.style.display = (type === "training") ? "block" : "none";
 
       let html = createChecklist(allSupplements.basis);
-      if (type === "training") {
-        html += "<hr>" + createChecklist(allSupplements.training, true);
+
+      // Whey normal bei Training oder Ruhetag
+      if (type === "training" || type === "ruhe") {
+        html += createChecklist(allSupplements.protein);
       }
+
+      // Nur an Trainingstagen: Trainingsergänzungen
+      if (type === "training") {
+        html += createChecklist(allSupplements.training);
+      }
+
       document.getElementById("supplements").innerHTML = html;
     }
 
