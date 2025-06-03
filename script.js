@@ -1,12 +1,12 @@
 const allSupplements = [
-  { name: "Whey Shake", icons: ["🥤", "🤯"], basePriority: 6, restDay: true },
   { name: "Vitamin B12", icons: ["🩸", "⏰"], basePriority: 1, restDay: true },
   { name: "Ashwagandha", icons: ["🧘", "⏰"], basePriority: 2, restDay: true },
   { name: "D3 + K2", icons: ["🦴", "⏰"], basePriority: 3, restDay: true },
   { name: "Omega 3", icons: ["🧠", "⏰"], basePriority: 4, restDay: true },
   { name: "Magnesium", icons: ["💤", "🌙"], basePriority: 5, restDay: true },
-  { name: "Citrullin", icons: ["💪", "🏃"], basePriority: 7, restDay: false },
-  { name: "Creatin", icons: ["🏋️", "🏃"], basePriority: 8, restDay: false },
+  { name: "Citrullin", icons: ["💪", "🏃"], basePriority: 6, restDay: false },
+  { name: "Creatin", icons: ["🏋️", "🏃"], basePriority: 7, restDay: false },
+  { name: "Whey Shake", icons: ["🥤", "🤯"], basePriority: 8, restDay: true },
   { name: "Whey Night", icons: ["🥤😴", "😴"], basePriority: 9, restDay: false }
 ];
 
@@ -28,10 +28,15 @@ function renderSupplements() {
       const clone = { ...s };
       clone.priority = clone.basePriority;
 
-      // Spezialfall: Whey Shake an Ruhetagen ganz oben und anderes Icon
+      // Spezialfall: Whey Shake an Ruhetagen ganz oben und Icon ändern
       if (currentDayType === "rest" && clone.name === "Whey Shake") {
         clone.priority = 0;
         clone.icons[1] = "⏰";
+      }
+
+      // Spezialfall: Whey Shake im Training => Icon explodierender Kopf
+      if (currentDayType === "training" && clone.name === "Whey Shake") {
+        clone.icons[1] = "🤯";
       }
 
       return clone;
