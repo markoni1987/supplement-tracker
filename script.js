@@ -3,10 +3,10 @@ const allSupplements = [
   { name: "Ashwagandha", icons: ["🧘", "⏰"], timing: "morning", restDay: true },
   { name: "D3 + K2", icons: ["🦴", "⏰"], timing: "morning", restDay: true },
   { name: "Omega 3", icons: ["🧠", "⏰"], timing: "morning", restDay: true },
-  { name: "Citrullin", icons: ["💪", "🏃"], timing: "beforeTraining", restDay: false },
+  { name: "Magnesium", icons: ["💤", "🌙"], timing: "earlyevening", restDay: true },
   { name: "Creatin", icons: ["🏋️", "🏃"], timing: "afterTraining", restDay: false },
+  { name: "Citrullin", icons: ["💪", "🏃"], timing: "beforeTraining", restDay: false },
   { name: "Whey Shake", icons: ["🥤", "🤯"], timing: "afterTraining", restDay: true },
-  { name: "Magnesium", icons: ["💤", "🌙"], timing: "evening", restDay: true },
   { name: "Whey Night", icons: ["🥤😴", "😴"], timing: "evening", restDay: false }
 ];
 
@@ -22,7 +22,7 @@ function renderSupplements() {
   const container = document.getElementById("supplements");
   container.innerHTML = "";
 
-  let supplements = allSupplements.filter(s => {
+  const supplements = allSupplements.filter(s => {
     if (currentDayType === "rest") {
       if (!s.restDay) return false;
       if (s.name === "Whey Shake") {
@@ -38,22 +38,19 @@ function renderSupplements() {
     return true;
   });
 
-  const timingOrder = { morning: 1, beforeTraining: 2, afterTraining: 3, evening: 4 };
-  supplements.sort((a, b) => timingOrder[a.timing] - timingOrder[b.timing]);
+  const order = { morning: 1, beforeTraining: 2, earlyevening: 3, afterTraining: 4, evening: 5 };
+  supplements.sort((a, b) => order[a.timing] - order[b.timing]);
 
   supplements.forEach(supp => {
     const id = `${currentDayType}_${supp.name}`;
     const div = document.createElement("div");
     div.className = "supplement";
-
     div.innerHTML = `
       <label class="left">
         <input type="checkbox" ${checkedSupplements[id] ? "checked" : ""} onchange="toggleCheck('${id}')">
-        <span>${supp.icons[0]} ${supp.name}</span>
+        <span>${supp.icons[0]} ${supp.name} ${supp.icons[1]}</span>
       </label>
-      <span>${supp.icons[1]}</span>
     `;
-
     container.appendChild(div);
   });
 }
