@@ -26,6 +26,11 @@
       color: #fff;
       border: 1px solid #444;
     }
+    .supplement-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -53,14 +58,31 @@
 
   <script>
     const allSupplements = {
-      basis: ["Omega 3", "Vitamin D3 + K2", "Magnesium", "Vitamin B12", "Ashwagandha"],
-      training: ["Creatin", "Citrullin", "Whey Protein"]
+      basis: [
+        { name: "Omega 3", icon: "🧠" },
+        { name: "Vitamin D3 + K2", icon: "🦴" },
+        { name: "Magnesium", icon: "💤" },
+        { name: "Vitamin B12", icon: "🩸" },
+        { name: "Ashwagandha", icon: "🧘" }
+      ],
+      training: [
+        { name: "Creatin", icon: "🏋️" },
+        { name: "Citrullin", icon: "💪" },
+        { name: "Whey Protein", icon: "🥤" },
+        { name: "Whey Protein (Abend)", icon: "🥤😴" }
+      ]
     };
 
-    function createChecklist(items) {
-      return items.map(name => {
-        const id = "sup_" + name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-        return `<label><input type="checkbox" id="${id}" /> ${name}</label>`;
+    function createChecklist(items, showSleepShake = false) {
+      return items.map(sup => {
+        if (sup.name === "Whey Protein (Abend)" && !showSleepShake) return "";
+        const id = "sup_" + sup.name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+        return `
+          <label class="supplement-label">
+            <input type="checkbox" id="${id}" />
+            <span>${sup.icon}</span> ${sup.name}
+          </label>
+        `;
       }).join("");
     }
 
@@ -71,12 +93,11 @@
 
       let html = createChecklist(allSupplements.basis);
       if (type === "training") {
-        html += "<hr>" + createChecklist(allSupplements.training);
+        html += "<hr>" + createChecklist(allSupplements.training, true);
       }
       document.getElementById("supplements").innerHTML = html;
     }
 
-    // Initial ausführen
     updateSupplements();
   </script>
 </body>
