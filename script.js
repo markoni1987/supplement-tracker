@@ -1,13 +1,13 @@
 const allSupplements = [
-  { name: "Whey Shake", icons: ["🥤", "🤯"], priority: 10, restDay: true },
-  { name: "Vitamin B12", icons: ["🩸", "⏰"], priority: 1, restDay: true },
-  { name: "Ashwagandha", icons: ["🧘", "⏰"], priority: 2, restDay: true },
-  { name: "D3 + K2", icons: ["🦴", "⏰"], priority: 3, restDay: true },
-  { name: "Omega 3", icons: ["🧠", "⏰"], priority: 4, restDay: true },
-  { name: "Magnesium", icons: ["💤", "🌙"], priority: 5, restDay: true },
-  { name: "Citrullin", icons: ["💪", "🏃"], priority: 6, restDay: false },
-  { name: "Creatin", icons: ["🏋️", "🏃"], priority: 7, restDay: false },
-  { name: "Whey Night", icons: ["🥤😴", "😴"], priority: 8, restDay: false }
+  { name: "Whey Shake", icons: ["🥤", "🤯"], basePriority: 6, restDay: true },
+  { name: "Vitamin B12", icons: ["🩸", "⏰"], basePriority: 1, restDay: true },
+  { name: "Ashwagandha", icons: ["🧘", "⏰"], basePriority: 2, restDay: true },
+  { name: "D3 + K2", icons: ["🦴", "⏰"], basePriority: 3, restDay: true },
+  { name: "Omega 3", icons: ["🧠", "⏰"], basePriority: 4, restDay: true },
+  { name: "Magnesium", icons: ["💤", "🌙"], basePriority: 5, restDay: true },
+  { name: "Citrullin", icons: ["💪", "🏃"], basePriority: 7, restDay: false },
+  { name: "Creatin", icons: ["🏋️", "🏃"], basePriority: 8, restDay: false },
+  { name: "Whey Night", icons: ["🥤😴", "😴"], basePriority: 9, restDay: false }
 ];
 
 let currentDayType = "training";
@@ -26,10 +26,14 @@ function renderSupplements() {
     .filter(s => currentDayType === "rest" ? s.restDay : true)
     .map(s => {
       const clone = { ...s };
+      clone.priority = clone.basePriority;
+
+      // Spezialfall: Whey Shake an Ruhetagen ganz oben und anderes Icon
       if (currentDayType === "rest" && clone.name === "Whey Shake") {
         clone.priority = 0;
         clone.icons[1] = "⏰";
       }
+
       return clone;
     })
     .sort((a, b) => a.priority - b.priority);
