@@ -1,31 +1,24 @@
 const supplementsData = [
   {
-    name: "Whey Shake",
-    iconLeft: "🥤",
-    iconRight: "⏰",
-    timing: "morning",
-    restDay: true
-  },
-  {
     name: "Vitamin B12",
     iconLeft: "🩸",
-    iconRight: "📆",
+    iconRight: "⏰",
     timing: "morning",
-    days: ["Montag", "Donnerstag"],
-    restDay: true
+    restDay: true,
+    days: ["Montag", "Donnerstag"]
   },
   {
     name: "Ashwagandha",
     iconLeft: "🧘",
-    iconRight: "🌙",
-    timing: "night",
+    iconRight: "⏰",
+    timing: "morning",
     restDay: true,
     pauseCycle: { weeksOn: 6, weeksOff: 2 }
   },
   {
-    name: "Vitamin D3",
+    name: "D3 + K2",
     iconLeft: "🦴",
-    iconRight: "🌞",
+    iconRight: "⏰",
     timing: "morning",
     restDay: true,
     pauseCycle: { weeksOn: 8, weeksOff: 2 }
@@ -33,8 +26,8 @@ const supplementsData = [
   {
     name: "Omega 3",
     iconLeft: "🧠",
-    iconRight: "🍽️",
-    timing: "flexible",
+    iconRight: "⏰",
+    timing: "morning",
     restDay: true,
     pauseCycle: { weeksOn: 6, weeksOff: 1 }
   },
@@ -48,7 +41,7 @@ const supplementsData = [
   },
   {
     name: "Creatin",
-    iconLeft: "💪",
+    iconLeft: "🏋️",
     iconRight: "🏃",
     timing: "post",
     restDay: false,
@@ -60,6 +53,13 @@ const supplementsData = [
     iconRight: "🏃",
     timing: "pre",
     restDay: false
+  },
+  {
+    name: "Whey Shake",
+    iconLeft: "🥤",
+    iconRight: "🤯",
+    timing: "post",
+    restDay: true
   },
   {
     name: "Whey Night",
@@ -80,27 +80,29 @@ function updateDisplay() {
   const today = new Date();
   const weekday = today.toLocaleDateString("de-DE", { weekday: "long" });
 
-  const timingOrder = { morning: 1, flexible: 2, pre: 3, post: 4, night: 5 };
-  const sortedSupplements = [...supplementsData].sort((a, b) => {
-    return timingOrder[a.timing] - timingOrder[b.timing];
-  });
-
-  sortedSupplements.forEach(sup => {
+  supplementsData.forEach((sup) => {
     const isRest = currentDayType === "rest";
     const restSkip = sup.restSkip || [];
 
-    if ((isRest && !sup.restDay) || (restSkip.includes(weekday))) return;
+    // Skip if supplement is not for rest days
+    if ((isRest && !sup.restDay) || restSkip.includes(weekday)) return;
+    // Skip if not scheduled for today (e.g. B12)
     if (sup.days && !sup.days.includes(weekday)) return;
 
     const cycleKey = sup.name;
-    if (!supplementCycles[cycleKey]) supplementCycles[cycleKey] = { start: today, paused: false };
+    if (!supplementCycles[cycleKey])
+      supplementCycles[cycleKey] = { start: today, paused: false };
 
     const cycle = supplementCycles[cycleKey];
     let paused = false;
+
     if (sup.pauseCycle) {
       const startDate = new Date(cycle.start);
       const diffWeeks = Math.floor((today - startDate) / (7 * 24 * 60 * 60 * 1000));
-      if (diffWeeks >= sup.pauseCycle.weeksOn && diffWeeks < sup.pauseCycle.weeksOn + sup.pauseCycle.weeksOff) {
+      if (
+        diffWeeks >= sup.pauseCycle.weeksOn &&
+        diffWeeks < sup.pauseCycle.weeksOn + sup.pauseCycle.weeksOff
+      ) {
         paused = true;
       } else if (diffWeeks >= sup.pauseCycle.weeksOn + sup.pauseCycle.weeksOff) {
         supplementCycles[cycleKey].start = today;
@@ -114,11 +116,7 @@ function updateDisplay() {
       <div>${paused ? "⏸️" : sup.iconRight}</div>
     `;
 
-    if (isRest && sup.name === "Whey Shake") {
-      list.prepend(supplementDiv); // Shake oben bei Ruhetagen
-    } else {
-      list.appendChild(supplementDiv);
-    }
+    list.appendChild(supplementDiv);
   });
 }
 
@@ -145,7 +143,7 @@ function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = function (e) {
     const data = JSON.parse(e.target.result);
     document.getElementById("notes").value = data.notes || "";
     supplementCycles = data.cycles || {};
