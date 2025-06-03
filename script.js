@@ -7,7 +7,7 @@ const allSupplements = [
   { name: "Citrullin", icons: ["💪", "🏃"], basePriority: 6, restDay: false },
   { name: "Creatin", icons: ["🏋️", "🏃"], basePriority: 7, restDay: false },
   { name: "Whey Shake", icons: ["🥤", "🤯"], basePriority: 8, restDay: true },
-  { name: "Whey Night", icons: ["🥤😴", "😴"], basePriority: 9, restDay: false }
+  { name: "Whey Night", icons: ["🥤💤", "😴"], basePriority: 9, restDay: false }
 ];
 
 let currentDayType = "training";
