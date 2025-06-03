@@ -1,16 +1,17 @@
 const allSupplements = [
-  { name: "Vitamin B12", icons: ["🩸", "⏰"], timing: "morning", paused: false, restDay: true },
-  { name: "Ashwagandha", icons: ["🧘", "⏰"], timing: "morning", paused: false, restDay: true },
-  { name: "D3 + K2", icons: ["🦴", "⏰"], timing: "morning", paused: false, restDay: true },
-  { name: "Omega 3", icons: ["🧠", "⏰"], timing: "morning", paused: false, restDay: true },
-  { name: "Magnesium", icons: ["💤", "🌙"], timing: "evening", paused: false, restDay: true },
-  { name: "Creatin", icons: ["🏋️", "🏃"], timing: "afterTraining", paused: false, restDay: false },
-  { name: "Citrullin", icons: ["💪", "🏃"], timing: "beforeTraining", paused: false, restDay: false },
-  { name: "Whey Shake", icons: ["🥤", "🤯"], timing: "afterTraining", paused: false, restDay: true },
-  { name: "Whey Night", icons: ["🥤😴", "😴"], timing: "evening", paused: false, restDay: false }
+  { name: "Vitamin B12", icons: ["🩸", "⏰"], timing: "morning", restDay: true },
+  { name: "Ashwagandha", icons: ["🧘", "⏰"], timing: "morning", restDay: true },
+  { name: "D3 + K2", icons: ["🦴", "⏰"], timing: "morning", restDay: true },
+  { name: "Omega 3", icons: ["🧠", "⏰"], timing: "morning", restDay: true },
+  { name: "Citrullin", icons: ["💪", "🏃"], timing: "beforeTraining", restDay: false },
+  { name: "Creatin", icons: ["🏋️", "🏃"], timing: "afterTraining", restDay: false },
+  { name: "Whey Shake", icons: ["🥤", "🤯"], timing: "afterTraining", restDay: true },
+  { name: "Magnesium", icons: ["💤", "🌙"], timing: "evening", restDay: true },
+  { name: "Whey Night", icons: ["🥤😴", "😴"], timing: "evening", restDay: false }
 ];
 
 let currentDayType = "training";
+let checkedSupplements = {};
 
 function setDayType(type) {
   currentDayType = type;
@@ -21,51 +22,56 @@ function renderSupplements() {
   const container = document.getElementById("supplements");
   container.innerHTML = "";
 
-  const supplements = allSupplements.filter(supp => {
+  let supplements = allSupplements.filter(s => {
     if (currentDayType === "rest") {
-      if (!supp.restDay) return false;
-      if (supp.name === "Whey Shake") {
-        supp.icons = ["🥤", "⏰"];
-        supp.timing = "morning";
+      if (!s.restDay) return false;
+      if (s.name === "Whey Shake") {
+        s.icons[1] = "⏰";
+        s.timing = "morning";
       }
     } else {
-      if (supp.name === "Whey Shake") {
-        supp.icons = ["🥤", "🤯"];
-        supp.timing = "afterTraining";
+      if (s.name === "Whey Shake") {
+        s.icons[1] = "🤯";
+        s.timing = "afterTraining";
       }
     }
     return true;
   });
 
-  supplements.sort((a, b) => {
-    const order = {
-      morning: 1,
-      beforeTraining: 2,
-      afterTraining: 3,
-      evening: 4
-    };
-    return order[a.timing] - order[b.timing];
-  });
+  const timingOrder = { morning: 1, beforeTraining: 2, afterTraining: 3, evening: 4 };
+  supplements.sort((a, b) => timingOrder[a.timing] - timingOrder[b.timing]);
 
   supplements.forEach(supp => {
+    const id = `${currentDayType}_${supp.name}`;
     const div = document.createElement("div");
-    div.className = "supplement" + (supp.paused ? " paused" : "");
+    div.className = "supplement";
+
     div.innerHTML = `
-      ${supp.icons.join(" ")} ${supp.name}
+      <label class="left">
+        <input type="checkbox" ${checkedSupplements[id] ? "checked" : ""} onchange="toggleCheck('${id}')">
+        <span>${supp.icons[0]} ${supp.name}</span>
+      </label>
+      <span>${supp.icons[1]}</span>
     `;
+
     container.appendChild(div);
   });
+}
+
+function toggleCheck(id) {
+  checkedSupplements[id] = !checkedSupplements[id];
 }
 
 function exportData() {
   const data = {
     notes: document.getElementById("notes").value,
+    checks: checkedSupplements,
     dayType: currentDayType
   };
   const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "supplement-tracker.json";
+  link.download = "supplements.json";
   link.click();
 }
 
@@ -77,10 +83,11 @@ function importData(event) {
   reader.onload = function (e) {
     try {
       const data = JSON.parse(e.target.result);
-      if (data.notes) document.getElementById("notes").value = data.notes;
-      if (data.dayType) setDayType(data.dayType);
-    } catch (err) {
-      alert("Fehler beim Importieren der Datei.");
+      document.getElementById("notes").value = data.notes || "";
+      checkedSupplements = data.checks || {};
+      setDayType(data.dayType || "training");
+    } catch {
+      alert("Fehler beim Importieren.");
     }
   };
   reader.readAsText(file);
