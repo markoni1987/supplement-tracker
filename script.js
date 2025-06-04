@@ -1,132 +1,143 @@
-// Supplement Tracker Script mit Reminder, automatischer Tageszählung, Statistik und Pausenlogik
-
-let dayType = localStorage.getItem("dayType") || "training";
-let supplementData = JSON.parse(localStorage.getItem("supplementData")) || {};
-let notesData = JSON.parse(localStorage.getItem("notesData")) || {};
-let supplementDays = JSON.parse(localStorage.getItem("supplementDays")) || {};
-let lastUpdated = localStorage.getItem("lastUpdated");
-const today = new Date().toISOString().split("T")[0];
-
-const supplementPlan = [
-  { name: "Vitamin B12", icons: ["🩸", "⏰"], basePriority: 1, restDay: true },
-  { name: "Ashwagandha", icons: ["🧘", "⏰"], basePriority: 2, restDay: true, cycle: 42, pause: 14 },
-  { name: "D3 + K2", icons: ["🦴", "⏰"], basePriority: 3, restDay: true, cycle: 56, pause: 14 },
-  { name: "Omega 3", icons: ["🧠", "⏰"], basePriority: 4, restDay: true, cycle: 42, pause: 7 },
-  { name: "Magnesium", icons: ["💤", "🌙"], basePriority: 5, restDay: true },
-  { name: "Citrullin", icons: ["💪", "🏃"], basePriority: 6, restDay: false },
-  { name: "Creatin", icons: ["🏋️", "🏃"], basePriority: 7, restDay: false, cycle: 42, pause: 14 },
-  { name: "Whey Shake", icons: ["🥤", "🤯"], basePriority: 8, restDay: true, restPriority: 0, restIcon: "⏰" },
-  { name: "Whey Night", icons: ["🥤💤", "😴"], basePriority: 9, restDay: false }
+const supplementsBase = [
+  { name: "Vitamin B12", icons: ["🩸", "⏰"], color: "#e63946", restDay: true, cycle: [6, 2] },
+  { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#ffb703", restDay: true, cycle: [6, 2] },
+  { name: "D3 + K2", icons: ["🦴", "⏰"], color: "#f8f9fa", restDay: true, cycle: [8, 2] },
+  { name: "Omega 3", icons: ["🧠", "⏰"], color: "#ffafcc", restDay: true, cycle: [6, 1] },
+  { name: "Magnesium", icons: ["💤", "⏰"], color: "#adb5bd", restDay: true },
+  { name: "Citrullin", icons: ["💪", "🏃"], color: "#f1c40f", restDay: false },
+  { name: "Creatin", icons: ["🏋️", "🏃"], color: "#ced4da", restDay: false, cycle: [6, 2] },
+  { name: "Whey Shake", icons: ["🥤", "🤯"], color: "#89c2d9", restDay: true },
+  { name: "Whey Night", icons: ["🥤💤", "😴"], color: "#f77f00", restDay: false }
 ];
 
-function init() {
-  checkDayReset();
-  renderSupplements();
-  document.getElementById("notes").value = notesData[today] || "";
+let state = JSON.parse(localStorage.getItem("supplements-state")) || {
+  dayType: "training",
+  notes: "",
+  checks: {},
+  counters: {},
+  lastDate: new Date().toDateString()
+};
+
+function saveState() {
+  localStorage.setItem("supplements-state", JSON.stringify(state));
 }
 
-function checkDayReset() {
-  if (lastUpdated !== today) {
-    supplementData[today] = {};
-    notesData[today] = "";
-    supplementPlan.forEach(s => {
-      if (!supplementDays[s.name]) supplementDays[s.name] = 0;
-      supplementDays[s.name]++;
-      if (s.cycle && supplementDays[s.name] > s.cycle) {
-        supplementDays[s.name] = -(s.pause || 7);
+function resetDaily() {
+  const today = new Date().toDateString();
+  if (state.lastDate !== today) {
+    state.lastDate = today;
+    state.checks = {};
+    for (const supp of supplementsBase) {
+      if (!state.counters[supp.name]) state.counters[supp.name] = 0;
+      if (!isInPause(supp.name)) {
+        state.counters[supp.name]++;
       }
-    });
-    localStorage.setItem("supplementData", JSON.stringify(supplementData));
-    localStorage.setItem("notesData", JSON.stringify(notesData));
-    localStorage.setItem("supplementDays", JSON.stringify(supplementDays));
-    localStorage.setItem("lastUpdated", today);
+    }
+    saveState();
   }
 }
 
-function setDayType(type) {
-  dayType = type;
-  localStorage.setItem("dayType", dayType);
-  renderSupplements();
+function isInPause(name) {
+  const supp = supplementsBase.find(s => s.name === name);
+  if (!supp?.cycle) return false;
+  const [active, pause] = supp.cycle;
+  const total = active + pause;
+  const counter = state.counters[name] || 0;
+  return counter % total >= active;
+}
+
+function getSupplementsToShow() {
+  const isRest = state.dayType === "rest";
+  return supplementsBase
+    .filter(s => isRest ? s.restDay : true)
+    .map(s => ({ ...s }))
+    .sort((a, b) => {
+      if (state.dayType === "rest") {
+        if (a.name === "Whey Shake") return -1;
+        if (b.name === "Whey Shake") return 1;
+      }
+      return supplementsBase.indexOf(a) - supplementsBase.indexOf(b);
+    });
 }
 
 function renderSupplements() {
+  resetDaily();
   const container = document.getElementById("supplements");
   container.innerHTML = "";
-  let supplements = supplementPlan
-    .filter(s => s.restDay || dayType === "training")
-    .sort((a, b) => {
-      const aP = dayType === "rest" && a.restPriority !== undefined ? a.restPriority : a.basePriority;
-      const bP = dayType === "rest" && b.restPriority !== undefined ? b.restPriority : b.basePriority;
-      return aP - bP;
-    });
+  const supplements = getSupplementsToShow();
+  if (state.dayType === "training") {
+    const wheyIndex = supplements.findIndex(s => s.name === "Whey Shake");
+    const nightIndex = supplements.findIndex(s => s.name === "Whey Night");
+    if (wheyIndex > -1 && nightIndex > -1 && wheyIndex > nightIndex) {
+      const [whey] = supplements.splice(wheyIndex, 1);
+      supplements.splice(nightIndex, 0, whey);
+    }
+  }
 
-  supplements.forEach(s => {
-    const paused = supplementDays[s.name] < 0;
-    const icons = dayType === "rest" && s.restIcon ? [s.icons[0], s.restIcon] : s.icons;
-
+  supplements.forEach(supp => {
     const div = document.createElement("div");
-    div.className = "supplement" + (paused ? " paused" : "");
+    div.className = "supplement";
+    if (isInPause(supp.name)) div.classList.add("paused");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = state.checks[supp.name] || false;
+    checkbox.onchange = () => {
+      state.checks[supp.name] = checkbox.checked;
+      saveState();
+    };
 
     const left = document.createElement("div");
     left.className = "left";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = supplementData[today]?.[s.name] || false;
-    checkbox.onchange = () => {
-      if (!supplementData[today]) supplementData[today] = {};
-      supplementData[today][s.name] = checkbox.checked;
-      localStorage.setItem("supplementData", JSON.stringify(supplementData));
-    };
+    left.innerHTML = `${supp.icons[0]} ${supp.name}`;
+    if (supp.name === "Whey Shake" && state.dayType === "rest") {
+      left.innerHTML = `${supp.icons[0]} ${supp.name}`;
+      supp.icons[1] = "⏰";
+    }
 
-    const iconLeft = document.createElement("span");
-    iconLeft.textContent = icons[0];
-    const label = document.createElement("span");
-    label.textContent = s.name;
-    const iconRight = document.createElement("span");
-    iconRight.className = "right-icon";
-    iconRight.textContent = paused ? "⏸️" : icons[1];
-
-    left.appendChild(iconLeft);
-    left.appendChild(label);
+    const right = document.createElement("div");
+    right.className = "right-icon";
+    right.textContent = isInPause(supp.name) ? "⏸️" : supp.icons[1];
 
     div.appendChild(checkbox);
     div.appendChild(left);
-    div.appendChild(iconRight);
-
+    div.appendChild(right);
     container.appendChild(div);
   });
+
+  document.getElementById("notes").value = state.notes || "";
+  document.getElementById("trainingBtn").classList.toggle("active", state.dayType === "training");
+  document.getElementById("restBtn").classList.toggle("active", state.dayType === "rest");
 }
 
+function setDayType(type) {
+  state.dayType = type;
+  saveState();
+  renderSupplements();
+}
+
+document.getElementById("notes").addEventListener("input", e => {
+  state.notes = e.target.value;
+  saveState();
+});
+
 function exportData() {
-  const data = { supplementData, notesData, supplementDays, lastUpdated };
-  const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(state)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "supplement-tracker.json";
+  a.download = "supplement-data.json";
   a.click();
-  URL.revokeObjectURL(url);
 }
 
 function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function (e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      supplementData = data.supplementData || {};
-      notesData = data.notesData || {};
-      supplementDays = data.supplementDays || {};
-      lastUpdated = data.lastUpdated || null;
-      localStorage.setItem("supplementData", JSON.stringify(supplementData));
-      localStorage.setItem("notesData", JSON.stringify(notesData));
-      localStorage.setItem("supplementDays", JSON.stringify(supplementDays));
-      localStorage.setItem("lastUpdated", lastUpdated);
-      init();
-    } catch (error) {
-      alert("Import fehlgeschlagen");
-    }
+  reader.onload = () => {
+    state = JSON.parse(reader.result);
+    saveState();
+    renderSupplements();
   };
   reader.readAsText(file);
 }
@@ -134,59 +145,42 @@ function importData(event) {
 function toggleStatsPopup() {
   const popup = document.getElementById("statsPopup");
   popup.style.display = popup.style.display === "none" ? "block" : "none";
-  renderStatsChart();
+  renderStatsChart(currentRange);
 }
 
+let currentRange = "week";
 function renderStatsChart(range = "week") {
-  const labels = supplementPlan.map(s => s.name);
-  const days = range === "month" ? 30 : 14;
-  const values = supplementPlan.map(s => Object.values(supplementData).reduce((sum, day) => sum + (day[s.name] ? 1 : 0), 0));
-  const colors = {
-    "Vitamin B12": "#e74c3c",
-    "Ashwagandha": "#8e44ad",
-    "D3 + K2": "#f0f0f0",
-    "Omega 3": "#ffc0cb",
-    "Magnesium": "#3498db",
-    "Citrullin": "#f1c40f",
-    "Creatin": "#7f8c8d",
-    "Whey Shake": "#5dade2",
-    "Whey Night": "#e67e22"
-  };
+  currentRange = range;
+  const labels = supplementsBase.map(s => s.name);
+  const days = range === "week" ? 7 : 30;
+  const data = supplementsBase.map(s => {
+    const c = state.counters[s.name] || 0;
+    return Math.min(100, Math.round((c % (days + 1)) / days * 100));
+  });
+  const colors = supplementsBase.map(s => s.color || "#999");
+
   const ctx = document.getElementById("statsChart").getContext("2d");
-  if (window.chart) window.chart.destroy();
-  window.chart = new Chart(ctx, {
+  if (window.myChart) window.myChart.destroy();
+  window.myChart = new Chart(ctx, {
     type: "bar",
     data: {
       labels,
       datasets: [{
-        label: "Einnahmen",
-        data: values,
-        backgroundColor: labels.map(label => colors[label] || "#ffffff")
+        label: "% Einnahme",
+        data,
+        backgroundColor: colors
       }]
     },
     options: {
       scales: {
-        y: { beginAtZero: true, ticks: { color: "#ffffff" } },
-        x: { ticks: { color: "#ffffff" } }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => `${ctx.raw} Einnahmen (${Math.round(ctx.raw / days * 100)}%)`
-          }
-        }
+        y: { beginAtZero: true, max: 100 }
       }
     }
   });
 }
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js").then(() => console.log("SW registered"));
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
 }
 
-window.onload = init;
-document.getElementById("notes").addEventListener("input", e => {
-  notesData[today] = e.target.value;
-  localStorage.setItem("notesData", JSON.stringify(notesData));
-});
+renderSupplements();
