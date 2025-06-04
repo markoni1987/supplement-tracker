@@ -16,7 +16,7 @@
     h1 {
       text-align: center;
     }
-    .controls, .stats-toggle {
+    .controls {
       text-align: center;
       margin-bottom: 15px;
     }
@@ -36,7 +36,6 @@
     .supplement {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       background: #222;
       margin: 5px 0;
       padding: 10px;
@@ -49,6 +48,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      flex: 1;
     }
     input[type="checkbox"] {
       margin-right: 10px;
@@ -74,6 +74,11 @@
       border-radius: 10px;
       padding: 15px;
       margin-top: 20px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
     }
     #statsPopup canvas {
       width: 100% !important;
@@ -93,6 +98,7 @@
   <div class="controls">
     <button onclick="setDayType('training')" id="trainingBtn">🏋️ Training</button>
     <button onclick="setDayType('rest')" id="restBtn">🛌 Ruhetag</button>
+    <button onclick="toggleStatsPopup()">📈</button>
   </div>
   <div id="supplements"></div>
   <textarea id="notes" placeholder="Tägliche Notiz..."></textarea>
@@ -103,14 +109,12 @@
     <button onclick="document.getElementById('importFile').click()">📥 Daten importieren</button>
   </div>
 
-  <div class="stats-toggle">
-    <button onclick="toggleStatsPopup()">📈</button>
-  </div>
   <div id="statsPopup">
     <canvas id="statsChart"></canvas>
     <div class="range-switch">
       <button onclick="renderStatsChart('week')">Woche</button>
       <button onclick="renderStatsChart('month')">Monat</button>
+      <button onclick="toggleStatsPopup()">❌ Schließen</button>
     </div>
   </div>
 
