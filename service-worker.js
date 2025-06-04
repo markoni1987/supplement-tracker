@@ -1,17 +1,7 @@
-const CACHE_NAME = "supplement-tracker-cache-v1";
-const urlsToCache = [
-  "./",
-  "index.html",
-  "script.js",
-  "manifest.json",
-  "icon.png",
-  "https://cdn.jsdelivr.net/npm/chart.js"
-];
-
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache);
+    caches.open("supplement-tracker-v1").then(cache => {
+      return cache.addAll(["index.html", "script.js", "manifest.json", "icon.png"]);
     })
   );
 });
