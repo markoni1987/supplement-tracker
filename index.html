@@ -4,35 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Supplement Tracker</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon.png">
 </head>
 <body>
-  <h1>💊 Supplement Tracker 📈</h1> 
-
-
-  <div class="buttons">
-    <button id="trainingBtn" onclick="setDayType('training')">🏋️ Training</button>
-    <button id="restBtn" onclick="setDayType('rest')">🛌 Ruhetag</button>
-    <button id="statsBtn" onclick="toggleStatsPopup()">📊</button>
+  <div class="header">
+    <h1>💊 Supplement Tracker <span class="icon">📈</span></h1>
+    <div class="button-group">
+      <button id="trainingBtn" onclick="setDayType('training')">🏋️‍♂️ Training</button>
+      <button id="restBtn" onclick="setDayType('rest')">🛏️ Ruhetag</button>
+      <button id="statsBtn" onclick="toggleStatsPopup()">📊</button>
+    </div>
   </div>
 
   <div id="supplements"></div>
 
   <textarea id="notes" placeholder="Notizen..."></textarea>
 
-  <div class="export-import">
-    <button onclick="exportData()">💾 Daten exportieren</button>
-    <input type="file" id="importFile" onchange="importData(event)" />
+  <div class="button-group bottom-buttons">
+    <button onclick="exportData()">📤 Exportieren</button>
+    <label class="upload-button">
+      📥 Importieren
+      <input type="file" onchange="importData(event)" hidden>
+    </label>
   </div>
 
-  <div id="statsPopup">
-    <canvas id="statsChart"></canvas>
-    <div id="rangeButtons">
-      <button onclick="renderStatsChart('week')">Woche</button>
-      <button onclick="renderStatsChart('month')">Monat</button>
+  <div id="statsPopup" class="popup">
+    <div class="popup-inner">
+      <div class="stats-controls">
+        <button onclick="renderStatsChart('week')">Woche</button>
+        <button onclick="renderStatsChart('month')">Monat</button>
+        <button onclick="toggleStatsPopup()">❌</button>
+      </div>
+      <canvas id="statsChart"></canvas>
     </div>
-    <button onclick="toggleStatsPopup()">Schließen</button>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
