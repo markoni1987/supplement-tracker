@@ -1,60 +1,90 @@
-const supplements = [
-  { name: "Vitamin B12", icons: ["🩸", "⏰"], basePriority: 1, restDay: true },
-  { name: "Ashwagandha", icons: ["🧘", "⏰"], basePriority: 2, restDay: true },
-  { name: "D3 + K2", icons: ["🦴", "⏰"], basePriority: 3, restDay: true },
-  { name: "Omega 3", icons: ["🧠", "⏰"], basePriority: 4, restDay: true },
-  { name: "Magnesium", icons: ["💤", "🌙"], basePriority: 5, restDay: true },
-  { name: "Citrullin", icons: ["💪", "🏃"], basePriority: 6, restDay: false },
-  { name: "Creatin", icons: ["🏋️", "🏃"], basePriority: 7, restDay: false },
-  { name: "Whey Shake", icons: ["🥤", "🤯"], basePriority: 8, restDay: true },
-  { name: "Whey Night", icons: ["🥤💤", "😴"], basePriority: 9, restDay: false }
+const SUPPLEMENTS = [
+  { name: "Vitamin B12", icons: ["🩸", "⏰"], basePriority: 1, restDay: true, cycle: null },
+  { name: "Ashwagandha", icons: ["🧘", "⏰"], basePriority: 2, restDay: true, cycle: { on: 42, off: 14, start: 0 } },
+  { name: "D3 + K2", icons: ["🦴", "⏰"], basePriority: 3, restDay: true, cycle: { on: 56, off: 14, start: 0 } },
+  { name: "Omega 3", icons: ["🧠", "⏰"], basePriority: 4, restDay: true, cycle: { on: 42, off: 7, start: 0 } },
+  { name: "Magnesium", icons: ["💤", "🌙"], basePriority: 5, restDay: true, cycle: null },
+  { name: "Creatin", icons: ["🏋️", "🏃"], basePriority: 6, restDay: false, cycle: { on: 42, off: 14, start: 0 } },
+  { name: "Whey Shake", icons: ["🥤", "🤯"], basePriority: 7, restDay: true, cycle: null },
+  { name: "Citrullin", icons: ["💪", "🏃"], basePriority: 8, restDay: false, cycle: null },
+  { name: "Whey Night", icons: ["🥤💤", "😴"], basePriority: 9, restDay: false, cycle: null }
 ];
 
 let currentDayType = localStorage.getItem("dayType") || "training";
+let checkedSupplements = JSON.parse(localStorage.getItem("checkedSupplements") || "{}");
+let notes = JSON.parse(localStorage.getItem("dailyNotes") || "{}");
+let startDate = localStorage.getItem("startDate") || new Date().toISOString().split("T")[0];
+if (!localStorage.getItem("startDate")) localStorage.setItem("startDate", startDate);
 
-function saveCheckboxState(name, checked) {
-  localStorage.setItem(`check_${name}_${getToday()}`, checked ? "1" : "0");
+function daysSinceStart() {
+  return Math.floor((new Date() - new Date(startDate)) / (1000 * 60 * 60 * 24));
 }
 
-function loadCheckboxState(name) {
-  return localStorage.getItem(`check_${name}_${getToday()}`) === "1";
-}
-
-function getToday() {
-  return new Date().toISOString().split("T")[0];
+function inPause(cycle) {
+  if (!cycle) return false;
+  const day = daysSinceStart();
+  const total = cycle.on + cycle.off;
+  const relativeDay = (day - cycle.start + total) % total;
+  return relativeDay >= cycle.on;
 }
 
 function renderSupplements() {
   const container = document.getElementById("supplements");
   container.innerHTML = "";
 
-  const filtered = supplements
+  const dayKey = new Date().toISOString().split("T")[0];
+  const todayChecks = checkedSupplements[dayKey] || [];
+
+  let visibleSupplements = SUPPLEMENTS
     .filter(s => currentDayType === "training" || s.restDay)
-    .sort((a, b) => a.basePriority - b.basePriority);
+    .map(s => ({ ...s, paused: inPause(s.cycle) }));
 
-  filtered.forEach(s => {
-    const div = document.createElement("div");
-    div.className = "supplement";
+  // Reorder for special case: Whey Shake on top at rest days
+  if (currentDayType === "rest") {
+    const wheyIndex = visibleSupplements.findIndex(s => s.name === "Whey Shake");
+    if (wheyIndex > -1) {
+      const whey = visibleSupplements.splice(wheyIndex, 1)[0];
+      visibleSupplements.unshift(whey);
+    }
+  }
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = loadCheckboxState(s.name);
-    checkbox.addEventListener("change", () => saveCheckboxState(s.name, checkbox.checked));
+  visibleSupplements
+    .sort((a, b) => a.basePriority - b.basePriority)
+    .forEach(supp => {
+      const div = document.createElement("div");
+      div.className = "supplement" + (supp.paused ? " paused" : "");
 
-    const left = document.createElement("span");
-    left.className = "left";
-    left.innerHTML = `${s.icons[0]} ${s.name}`;
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = todayChecks.includes(supp.name);
+      checkbox.onchange = () => toggleSupplement(supp.name, checkbox.checked);
 
-    const right = document.createElement("span");
-    right.innerText = s.icons[1];
+      const left = document.createElement("div");
+      left.className = "left";
+      left.innerHTML = `<span>${supp.icons[0]}</span> <span>${supp.name}</span>`;
 
-    div.appendChild(checkbox);
-    div.appendChild(left);
-    div.appendChild(right);
-    container.appendChild(div);
-  });
+      const right = document.createElement("div");
+      right.className = "right-icon";
+      right.textContent = supp.paused ? "⏸️" : supp.icons[1];
 
-  document.getElementById("notes").value = localStorage.getItem("notes_" + getToday()) || "";
+      div.appendChild(checkbox);
+      div.appendChild(left);
+      div.appendChild(right);
+      container.appendChild(div);
+    });
+
+  document.getElementById("notes").value = notes[dayKey] || "";
+}
+
+function toggleSupplement(name, checked) {
+  const dayKey = new Date().toISOString().split("T")[0];
+  checkedSupplements[dayKey] = checkedSupplements[dayKey] || [];
+  if (checked) {
+    if (!checkedSupplements[dayKey].includes(name)) checkedSupplements[dayKey].push(name);
+  } else {
+    checkedSupplements[dayKey] = checkedSupplements[dayKey].filter(n => n !== name);
+  }
+  localStorage.setItem("checkedSupplements", JSON.stringify(checkedSupplements));
 }
 
 function setDayType(type) {
@@ -63,35 +93,46 @@ function setDayType(type) {
   renderSupplements();
 }
 
-document.getElementById("notes").addEventListener("input", e => {
-  localStorage.setItem("notes_" + getToday(), e.target.value);
-});
-
 function exportData() {
   const data = {
-    notes: localStorage.getItem("notes_" + getToday()),
-    checkboxes: Object.entries(localStorage).filter(([k]) => k.startsWith("check_"))
+    checkedSupplements,
+    notes,
+    startDate
   };
   const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `supplements_${getToday()}.json`;
+  a.href = url;
+  a.download = "supplement_tracker_backup.json";
   a.click();
+  URL.revokeObjectURL(url);
 }
 
 function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
   const reader = new FileReader();
-  reader.onload = () => {
-    const data = JSON.parse(reader.result);
-    if (data.notes) localStorage.setItem("notes_" + getToday(), data.notes);
-    if (data.checkboxes) {
-      data.checkboxes.forEach(([key, value]) => {
-        localStorage.setItem(key, value);
-      });
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.checkedSupplements) checkedSupplements = data.checkedSupplements;
+      if (data.notes) notes = data.notes;
+      if (data.startDate) startDate = data.startDate;
+      localStorage.setItem("checkedSupplements", JSON.stringify(checkedSupplements));
+      localStorage.setItem("dailyNotes", JSON.stringify(notes));
+      localStorage.setItem("startDate", startDate);
+      renderSupplements();
+    } catch (err) {
+      alert("Fehler beim Importieren der Daten.");
     }
-    renderSupplements();
   };
-  reader.readAsText(event.target.files[0]);
+  reader.readAsText(file);
 }
+
+document.getElementById("notes").addEventListener("input", () => {
+  const dayKey = new Date().toISOString().split("T")[0];
+  notes[dayKey] = document.getElementById("notes").value;
+  localStorage.setItem("dailyNotes", JSON.stringify(notes));
+});
 
 renderSupplements();
