@@ -1,10 +1,11 @@
 const CACHE_NAME = "supplement-tracker-cache-v1";
 const urlsToCache = [
-  "/",
-  "/index.html",
-  "/script.js",
-  "/manifest.json",
-  "/icon.png"
+  "./",
+  "index.html",
+  "script.js",
+  "manifest.json",
+  "icon.png",
+  "https://cdn.jsdelivr.net/npm/chart.js"
 ];
 
 self.addEventListener("install", event => {
@@ -20,19 +21,5 @@ self.addEventListener("fetch", event => {
     caches.match(event.request).then(response => {
       return response || fetch(event.request);
     })
-  );
-});
-
-self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames =>
-      Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      )
-    )
   );
 });
