@@ -1,160 +1,109 @@
 body {
+  margin: 0;
   font-family: Arial, sans-serif;
   background-color: #111;
-  color: white;
-  margin: 0;
-  padding: 0;
+  color: #fff;
+}
+
+.header {
   text-align: center;
+  padding: 20px 10px 10px;
 }
 
-header {
-  padding: 10px 0 0;
+h1 {
+  font-size: 22px;
+  margin-bottom: 10px;
 }
 
-header h1 {
-  font-size: 20px;
+.icon {
+  font-size: 22px;
+}
+
+.button-group {
   display: flex;
   justify-content: center;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
+  margin-top: 5px;
 }
 
-#dayButtons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: 15px auto;
-  flex-wrap: wrap;
-}
-
-#dayButtons button {
-  font-size: 15px;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
+.button-group button {
   background-color: #444;
-  color: white;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s;
 }
 
-#dayButtons button.active {
-  background-color: #007bff;
-}
-
-#dayButtons button:hover {
+.button-group button:hover {
   background-color: #666;
 }
 
-#supplements {
-  max-width: 360px;
-  margin: 0 auto;
+.bottom-buttons {
+  margin-top: 20px;
+  justify-content: center;
 }
 
-.supplement {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #222;
-  padding: 8px 10px;
-  border-radius: 10px;
-  margin: 8px 0;
-  width: 100%;
+.upload-button {
+  background-color: #444;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
 }
 
-.supplement.paused {
-  opacity: 0.5;
-}
-
-input[type="checkbox"] {
-  margin-right: 8px;
-}
-
-.left {
-  flex: 1;
-  text-align: left;
-}
-
-.right-icon {
-  font-size: 20px;
-  margin-left: 12px;
-}
-
-textarea {
+textarea#notes {
   display: block;
-  margin: 20px auto;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
   width: 90%;
-  max-width: 360px;
-  background-color: #222;
-  color: white;
-  font-size: 14px;
-}
-
-#controls {
   margin: 20px auto;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-#controls button {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
-  background-color: #444;
-  color: white;
-  cursor: pointer;
+  height: 80px;
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 10px;
   font-size: 14px;
 }
 
-#controls button:hover {
-  background-color: #666;
-}
-
-#statsPopup {
+.popup {
+  display: none;
   position: fixed;
-  top: 10%;
+  top: 5%;
   left: 50%;
   transform: translateX(-50%);
-  background: #222;
-  border: 1px solid #444;
+  background-color: #222;
   padding: 20px;
-  border-radius: 15px;
-  width: 90%;
-  max-width: 400px;
-  display: none;
+  border-radius: 10px;
+  border: 1px solid #444;
   z-index: 1000;
 }
 
-#statsPopup h2 {
-  margin-top: 0;
-}
-
-#statsChart {
-  width: 100%;
-  height: 300px;
-}
-
-.stats-buttons {
-  margin-top: 15px;
+.stats-controls {
   display: flex;
-  justify-content: center;
-  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
 
-.stats-buttons button {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
+.stats-controls button {
   background-color: #444;
-  color: white;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
   cursor: pointer;
 }
 
-.stats-buttons button:hover {
+.stats-controls button:hover {
   background-color: #666;
+}
+
+canvas {
+  background-color: #111;
+  border-radius: 6px;
 }
