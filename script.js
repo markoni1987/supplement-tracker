@@ -53,7 +53,7 @@ function getSupplementsToShow() {
     .filter(s => isRest ? s.restDay : true)
     .map(s => ({ ...s }))
     .sort((a, b) => {
-      if (state.dayType === "rest") {
+      if (isRest) {
         if (a.name === "Whey Shake") return -1;
         if (b.name === "Whey Shake") return 1;
       }
@@ -66,6 +66,8 @@ function renderSupplements() {
   const container = document.getElementById("supplements");
   container.innerHTML = "";
   const supplements = getSupplementsToShow();
+
+  // Korrigierte Reihenfolge bei Training
   if (state.dayType === "training") {
     const wheyIndex = supplements.findIndex(s => s.name === "Whey Shake");
     const nightIndex = supplements.findIndex(s => s.name === "Whey Night");
@@ -75,7 +77,12 @@ function renderSupplements() {
     }
   }
 
-  supplements.forEach(supp => {
+  supplements.forEach(s => {
+    const supp = { ...s }; // Lokale Kopie
+    if (supp.name === "Whey Shake") {
+      supp.icons[1] = state.dayType === "rest" ? "⏰" : "🤯";
+    }
+
     const div = document.createElement("div");
     div.className = "supplement";
     if (isInPause(supp.name)) div.classList.add("paused");
@@ -91,10 +98,6 @@ function renderSupplements() {
     const left = document.createElement("div");
     left.className = "left";
     left.innerHTML = `${supp.icons[0]} ${supp.name}`;
-    if (supp.name === "Whey Shake" && state.dayType === "rest") {
-      left.innerHTML = `${supp.icons[0]} ${supp.name}`;
-      supp.icons[1] = "⏰";
-    }
 
     const right = document.createElement("div");
     right.className = "right-icon";
