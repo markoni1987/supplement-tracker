@@ -1,3 +1,4 @@
+// script.js
 const supplementsBase = [
   { name: "Vitamin B12", icons: ["🩸", "⏰"], color: "#e63946", restDay: true, cycle: [6, 2] },
   { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#ffb703", restDay: true, cycle: [6, 2] },
@@ -168,13 +169,16 @@ function renderStatsChart(range = "week") {
       datasets: [{
         label: "% Einnahme",
         data,
-        backgroundColor: colors
+        backgroundColor: colors,
+        borderRadius: 5,
+        barThickness: 20
       }]
     },
     options: {
-      scales: {
-        y: { beginAtZero: true, max: 100 }
-      }
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, max: 100 } },
+      responsive: true,
+      maintainAspectRatio: false
     }
   });
 }
