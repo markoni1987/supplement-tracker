@@ -3,119 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="manifest" href="manifest.json" />
   <title>Supplement Tracker</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .controls {
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    .controls button, .export-import button {
-      margin: 5px;
-      padding: 10px 15px;
-      font-size: 14px;
-      border: none;
-      border-radius: 5px;
-      background-color: #444;
-      color: white;
-      cursor: pointer;
-    }
-    .controls button.active {
-      background-color: #666;
-    }
-    .supplement {
-      display: flex;
-      align-items: center;
-      background: #222;
-      margin: 5px 0;
-      padding: 10px;
-      border-radius: 5px;
-    }
-    .supplement.paused {
-      opacity: 0.5;
-    }
-    .left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
-    }
-    input[type="checkbox"] {
-      margin-right: 10px;
-    }
-    .right-icon {
-      margin-left: auto;
-      font-size: 18px;
-    }
-    textarea {
-      width: 100%;
-      margin-top: 10px;
-      height: 60px;
-      padding: 10px;
-      background: #222;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-    }
-    #statsPopup {
-      display: none;
-      background: #222;
-      border: 1px solid #444;
-      border-radius: 10px;
-      padding: 15px;
-      margin-top: 20px;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 1000;
-    }
-    #statsPopup canvas {
-      width: 100% !important;
-      max-height: 400px;
-    }
-    .range-switch {
-      text-align: center;
-      margin-top: 10px;
-    }
-    .range-switch button {
-      margin: 5px;
-    }
-  </style>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>💊 Supplement Tracker 📊</h1>
-  <div class="controls">
-    <button onclick="setDayType('training')" id="trainingBtn">🏋️ Training</button>
-    <button onclick="setDayType('rest')" id="restBtn">🛌 Ruhetag</button>
-    <button onclick="toggleStatsPopup()">📈</button>
+  <h1>💊 Supplement Tracker</h1>
+
+  <div class="buttons">
+    <button id="trainingBtn" onclick="setDayType('training')">🏋️ Training</button>
+    <button id="restBtn" onclick="setDayType('rest')">😌 Ruhetag</button>
+    <button id="statsBtn" onclick="toggleStatsPopup()">📊</button>
   </div>
+
   <div id="supplements"></div>
-  <textarea id="notes" placeholder="Tägliche Notiz..."></textarea>
+
+  <textarea id="notes" placeholder="Notizen..."></textarea>
 
   <div class="export-import">
-    <button onclick="exportData()">📤 Daten exportieren</button>
-    <input type="file" accept="application/json" onchange="importData(event)" style="display: none" id="importFile">
-    <button onclick="document.getElementById('importFile').click()">📥 Daten importieren</button>
+    <button onclick="exportData()">💾 Daten exportieren</button>
+    <input type="file" id="importFile" onchange="importData(event)" />
   </div>
 
   <div id="statsPopup">
     <canvas id="statsChart"></canvas>
-    <div class="range-switch">
+    <div id="rangeButtons">
       <button onclick="renderStatsChart('week')">Woche</button>
       <button onclick="renderStatsChart('month')">Monat</button>
-      <button onclick="toggleStatsPopup()">❌ Schließen</button>
     </div>
+    <button onclick="toggleStatsPopup()">Schließen</button>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
