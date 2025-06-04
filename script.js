@@ -1,4 +1,4 @@
-// Supplement Tracker Script mit automatischem Tageswechsel, Pausenlogik, Statistik und PWA Registrierung
+// Supplement Tracker Script mit Reminder, automatischer Tageszählung, Statistik und Pausenlogik
 
 let dayType = localStorage.getItem("dayType") || "training";
 let supplementData = JSON.parse(localStorage.getItem("supplementData")) || {};
@@ -8,15 +8,15 @@ let lastUpdated = localStorage.getItem("lastUpdated");
 const today = new Date().toISOString().split("T")[0];
 
 const supplementPlan = [
-  { name: "Vitamin B12", icons: ["🩸", "⏰"], basePriority: 1, restDay: true, cycle: null },
+  { name: "Vitamin B12", icons: ["🩸", "⏰"], basePriority: 1, restDay: true },
   { name: "Ashwagandha", icons: ["🧘", "⏰"], basePriority: 2, restDay: true, cycle: 42, pause: 14 },
   { name: "D3 + K2", icons: ["🦴", "⏰"], basePriority: 3, restDay: true, cycle: 56, pause: 14 },
   { name: "Omega 3", icons: ["🧠", "⏰"], basePriority: 4, restDay: true, cycle: 42, pause: 7 },
-  { name: "Magnesium", icons: ["💤", "🌙"], basePriority: 5, restDay: true, cycle: null },
-  { name: "Citrullin", icons: ["💪", "🏃"], basePriority: 6, restDay: false, cycle: null },
+  { name: "Magnesium", icons: ["💤", "🌙"], basePriority: 5, restDay: true },
+  { name: "Citrullin", icons: ["💪", "🏃"], basePriority: 6, restDay: false },
   { name: "Creatin", icons: ["🏋️", "🏃"], basePriority: 7, restDay: false, cycle: 42, pause: 14 },
   { name: "Whey Shake", icons: ["🥤", "🤯"], basePriority: 8, restDay: true, restPriority: 0, restIcon: "⏰" },
-  { name: "Whey Night", icons: ["🥤💤", "😴"], basePriority: 9, restDay: false, cycle: null }
+  { name: "Whey Night", icons: ["🥤💤", "😴"], basePriority: 9, restDay: false }
 ];
 
 function init() {
@@ -32,11 +32,8 @@ function checkDayReset() {
     supplementPlan.forEach(s => {
       if (!supplementDays[s.name]) supplementDays[s.name] = 0;
       supplementDays[s.name]++;
-
       if (s.cycle && supplementDays[s.name] > s.cycle) {
         supplementDays[s.name] = -(s.pause || 7);
-      } else if (supplementDays[s.name] < 0) {
-        // in pause
       }
     });
     localStorage.setItem("supplementData", JSON.stringify(supplementData));
@@ -101,12 +98,7 @@ function renderSupplements() {
 }
 
 function exportData() {
-  const data = {
-    supplementData,
-    notesData,
-    supplementDays,
-    lastUpdated
-  };
+  const data = { supplementData, notesData, supplementDays, lastUpdated };
   const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -145,24 +137,45 @@ function toggleStatsPopup() {
   renderStatsChart();
 }
 
-function renderStatsChart() {
+function renderStatsChart(range = "week") {
   const labels = supplementPlan.map(s => s.name);
-  const values = supplementPlan.map(s => {
-    return Object.values(supplementData).reduce((sum, day) => sum + (day[s.name] ? 1 : 0), 0);
-  });
-
+  const days = range === "month" ? 30 : 14;
+  const values = supplementPlan.map(s => Object.values(supplementData).reduce((sum, day) => sum + (day[s.name] ? 1 : 0), 0));
+  const colors = {
+    "Vitamin B12": "#e74c3c",
+    "Ashwagandha": "#8e44ad",
+    "D3 + K2": "#f0f0f0",
+    "Omega 3": "#ffc0cb",
+    "Magnesium": "#3498db",
+    "Citrullin": "#f1c40f",
+    "Creatin": "#7f8c8d",
+    "Whey Shake": "#5dade2",
+    "Whey Night": "#e67e22"
+  };
   const ctx = document.getElementById("statsChart").getContext("2d");
   if (window.chart) window.chart.destroy();
   window.chart = new Chart(ctx, {
     type: "bar",
     data: {
       labels,
-      datasets: [{ label: "Einnahmen", data: values }]
+      datasets: [{
+        label: "Einnahmen",
+        data: values,
+        backgroundColor: labels.map(label => colors[label] || "#ffffff")
+      }]
     },
     options: {
-      scales: { y: { beginAtZero: true } },
+      scales: {
+        y: { beginAtZero: true, ticks: { color: "#ffffff" } },
+        x: { ticks: { color: "#ffffff" } }
+      },
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.raw} Einnahmen (${Math.round(ctx.raw / days * 100)}%)`
+          }
+        }
       }
     }
   });
