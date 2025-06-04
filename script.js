@@ -4,7 +4,7 @@ const supplementsBase = [
   { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#ffb703", restDay: true, cycle: [6, 2] },
   { name: "D3 + K2", icons: ["🦴", "⏰"], color: "#f8f9fa", restDay: true, cycle: [8, 2] },
   { name: "Omega 3", icons: ["🧠", "⏰"], color: "#ffafcc", restDay: true, cycle: [6, 1] },
-  { name: "Magnesium", icons: ["💤", "⏰"], color: "#adb5bd", restDay: true },
+  { name: "Magnesium", icons: ["💤", "🌙"], color: "#adb5bd", restDay: true },
   { name: "Citrullin", icons: ["💪", "🏃"], color: "#f1c40f", restDay: false },
   { name: "Creatin", icons: ["🏋️", "🏃"], color: "#ced4da", restDay: false, cycle: [6, 2] },
   { name: "Whey Shake", icons: ["🥤", "🤯"], color: "#89c2d9", restDay: true },
