@@ -1,3 +1,6 @@
+/* --------------------------------------------
+   Allgemeine Styles
+   -------------------------------------------- */
 body {
   font-family: Arial, sans-serif;
   background-color: #121212;
@@ -12,7 +15,11 @@ h1 {
   margin-bottom: 1rem;
 }
 
-button {
+/* --------------------------------------------
+   Button-Grundstil (für <button> und .upload-button)
+   -------------------------------------------- */
+button,
+.upload-button {
   padding: 0.5rem 1rem;
   margin: 0.3rem;
   border: none;
@@ -21,14 +28,27 @@ button {
   background-color: #444;
   color: white;
   cursor: pointer;
+  text-align: center; /* Besonders wichtig für .upload-button */
 }
 
+button:hover,
+.upload-button:hover {
+  background-color: #555;
+}
+
+/* --------------------------------------------
+   Zentrierung aller Buttons in .button-group
+   -------------------------------------------- */
 .button-group {
   display: flex;
   justify-content: center;
 }
 
-#trainingBtn, #restBtn {
+/* --------------------------------------------
+   Spezielle Mindestbreiten (Training/Rest/Stats)
+   -------------------------------------------- */
+#trainingBtn,
+#restBtn {
   min-width: 130px;
 }
 
@@ -36,10 +56,16 @@ button {
   min-width: 90px;
 }
 
+/* --------------------------------------------
+   Aktiver Button (blau) 
+   -------------------------------------------- */
 button.active {
   background-color: #007bff;
 }
 
+/* --------------------------------------------
+   Supplement-Karten
+   -------------------------------------------- */
 .supplement {
   display: flex;
   align-items: center;
@@ -71,6 +97,9 @@ button.active {
   opacity: 0.5;
 }
 
+/* --------------------------------------------
+   Textarea für Notizen
+   -------------------------------------------- */
 textarea {
   width: 95%;
   max-width: 420px;
@@ -84,6 +113,9 @@ textarea {
   display: block;
 }
 
+/* --------------------------------------------
+   Stats-Pop-up
+   -------------------------------------------- */
 #statsPopup {
   display: none;
   position: fixed;
@@ -105,6 +137,9 @@ textarea {
   height: 300px;
 }
 
+/* --------------------------------------------
+   Buttons im Stats-Pop-up
+   -------------------------------------------- */
 .stats-controls {
   display: flex;
   justify-content: center;
@@ -123,4 +158,19 @@ textarea {
 
 .stats-controls button:hover {
   background-color: #555;
+}
+
+/* --------------------------------------------
+   Stil für das Upload-Label („Importieren“)
+   -------------------------------------------- */
+.upload-button input[type="file"] {
+  display: none; /* Versteckt das Dateieingabe-Feld selbst */
+}
+
+/* --------------------------------------------
+   Untere Button-Gruppe (Export & Import)
+   bleibt zentriert durch .button-group
+   -------------------------------------------- */
+.bottom-buttons {
+  margin-top: 1rem; /* optionaler Abstand nach oben */
 }
