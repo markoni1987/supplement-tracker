@@ -133,9 +133,13 @@ function importData(event) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    state = JSON.parse(reader.result);
-    saveState();
-    renderSupplements();
+    try {
+      state = JSON.parse(reader.result);
+      saveState();
+      renderSupplements();
+    } catch (err) {
+      alert("Fehler beim Einlesen der Datei: Ungültiges JSON.");
+    }
   };
   reader.readAsText(file);
 }
@@ -201,17 +205,18 @@ function exportCSV() {
     const dayType = state.dayType;
     // EinnahmeStatus: "eingenommen" oder "nicht eingenommen"
     const einnahmeStatus = state.checks[name] ? "eingenommen" : "nicht eingenommen";
-    // Datum
-    const lastDate = state.lastDate;
+    // Datum – hier korrekt in Anführungszeichen verpackt
+    const lastDateRaw = state.lastDate;
+    const lastDate = `"${lastDateRaw}"`;
     // PauseStatus: "Pause" oder "keine Pause"
     const pauseStatus = isInPause(name) ? "Pause" : "keine Pause";
 
-    // Baue die CSV-Zeile; Datum in Anführungszeichen, falls Sonderzeichen
+    // Baue die CSV-Zeile
     const row = [
       name,
       dayType,
       einnahmeStatus,
-      `"${lastDate}"`,
+      lastDate,
       pauseStatus
     ];
     csvRows.push(row.join(","));
@@ -222,16 +227,19 @@ function exportCSV() {
   const notesEscaped = state.notes ? state.notes.replace(/\r?\n/g, "\\r\\n") : "";
   csvRows.push(`notes,"${notesEscaped}"`);
 
-  // 4. Gesamten CSV-Text zusammenfügen
+  // 4. Gesamten CSV-String zusammenfügen
   const csvString = csvRows.join("\r\n");
 
-  // 5. Download als .csv-Datei anstoßen
+  // 5. Download-Link im DOM anlegen und klicken
   const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = "supplement-data.csv";
+  // Erst ins DOM einhängen, dann klicken, dann entfernen
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
 
   // 6. URL-Objekt freigeben (optional)
   setTimeout(() => {
@@ -244,4 +252,5 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js');
 }
 
+// Beim Laden der Seite Supplement-Liste rendern
 renderSupplements();
