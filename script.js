@@ -1,4 +1,7 @@
+// ------------------------------
 // script.js
+// ------------------------------
+
 const supplementsBase = [
   { name: "Vitamin B12", icons: ["🩸", "⏰"], color: "#e63946", restDay: true, cycle: [6, 2] },
   { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#ffb703", restDay: true, cycle: [6, 2] },
@@ -125,15 +128,6 @@ document.getElementById("notes").addEventListener("input", e => {
   saveState();
 });
 
-function exportData() {
-  const blob = new Blob([JSON.stringify(state)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "supplement-data.json";
-  a.click();
-}
-
 function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -185,6 +179,66 @@ function renderStatsChart(range = "week") {
     }
   });
 }
+
+// ────────────────────────────────────────────
+// Neu: CSV-Export ohne Counter, mit deutschen Status-Begriffen
+// ────────────────────────────────────────────
+function exportCSV() {
+  // 1. Kopfzeile mit deutschen Spaltennamen
+  const headers = [
+    "name",
+    "dayType",
+    "EinnahmeStatus",  // statt "checked"
+    "lastDate",
+    "PauseStatus"     // statt "inPause"
+  ];
+  const csvRows = [];
+  csvRows.push(headers.join(","));
+
+  // 2. Pro Supplement eine Zeile mit Werten
+  for (const supp of supplementsBase) {
+    const name = supp.name;
+    const dayType = state.dayType;
+    // EinnahmeStatus: "eingenommen" oder "nicht eingenommen"
+    const einnahmeStatus = state.checks[name] ? "eingenommen" : "nicht eingenommen";
+    // Datum
+    const lastDate = state.lastDate;
+    // PauseStatus: "Pause" oder "keine Pause"
+    const pauseStatus = isInPause(name) ? "Pause" : "keine Pause";
+
+    // Baue die CSV-Zeile; Datum in Anführungszeichen, falls Sonderzeichen
+    const row = [
+      name,
+      dayType,
+      einnahmeStatus,
+      `"${lastDate}"`,
+      pauseStatus
+    ];
+    csvRows.push(row.join(","));
+  }
+
+  // 3. Leerzeile und Notizen (falls vorhanden)
+  csvRows.push("");
+  const notesEscaped = state.notes ? state.notes.replace(/\r?\n/g, "\\r\\n") : "";
+  csvRows.push(`notes,"${notesEscaped}"`);
+
+  // 4. Gesamten CSV-Text zusammenfügen
+  const csvString = csvRows.join("\r\n");
+
+  // 5. Download als .csv-Datei anstoßen
+  const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "supplement-data.csv";
+  a.click();
+
+  // 6. URL-Objekt freigeben (optional)
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
+}
+// ────────────────────────────────────────────
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js');
