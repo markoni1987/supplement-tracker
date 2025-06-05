@@ -28,7 +28,7 @@ button,
   background-color: #444;
   color: white;
   cursor: pointer;
-  text-align: center; /* Besonders wichtig für .upload-button */
+  text-align: center;
 }
 
 button:hover,
@@ -172,5 +172,5 @@ textarea {
    bleibt zentriert durch .button-group
    -------------------------------------------- */
 .bottom-buttons {
-  margin-top: 1rem; /* optionaler Abstand nach oben */
+  margin-top: 1rem; /* Option: Abstand nach oben */
 }
