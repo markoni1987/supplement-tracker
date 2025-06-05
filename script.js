@@ -2,6 +2,7 @@
 // script.js
 // ------------------------------
 
+// 1) Definition aller Supplements und ihrer Zyklus-/Icon-Daten
 const supplementsBase = [
   { name: "Vitamin B12", icons: ["🩸", "⏰"], color: "#e63946", restDay: true, cycle: [6, 2] },
   { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#ffb703", restDay: true, cycle: [6, 2] },
@@ -14,6 +15,7 @@ const supplementsBase = [
   { name: "Whey Night", icons: ["🥤💤", "😴"], color: "#f77f00", restDay: false }
 ];
 
+// 2) Initialer State oder aus localStorage geladen
 let state = JSON.parse(localStorage.getItem("supplements-state")) || {
   dayType: "training",
   notes: "",
@@ -22,10 +24,12 @@ let state = JSON.parse(localStorage.getItem("supplements-state")) || {
   lastDate: new Date().toDateString()
 };
 
+// 3) Funktion, um State in localStorage zu speichern
 function saveState() {
   localStorage.setItem("supplements-state", JSON.stringify(state));
 }
 
+// 4) Wenn ein neuer Tag beginnt, Counter hochzählen und Häkchen resetten
 function resetDaily() {
   const today = new Date().toDateString();
   if (state.lastDate !== today) {
@@ -41,6 +45,7 @@ function resetDaily() {
   }
 }
 
+// 5) Prüfen, ob ein Supplement gerade in einer Pause ist
 function isInPause(name) {
   const supp = supplementsBase.find(s => s.name === name);
   if (!supp?.cycle) return false;
@@ -50,6 +55,7 @@ function isInPause(name) {
   return counter % total >= active;
 }
 
+// 6) Filtert und sortiert die Supplements je nach dayType
 function getSupplementsToShow() {
   const isRest = state.dayType === "rest";
   return supplementsBase
@@ -64,13 +70,14 @@ function getSupplementsToShow() {
     });
 }
 
+// 7) Rendern der Supplements im DOM
 function renderSupplements() {
   resetDaily();
   const container = document.getElementById("supplements");
   container.innerHTML = "";
   const supplements = getSupplementsToShow();
 
-  // Korrigierte Reihenfolge bei Training
+  // Wenn Trainingstag, Whey Shake und Whey Night in korrekter Reihenfolge
   if (state.dayType === "training") {
     const wheyIndex = supplements.findIndex(s => s.name === "Whey Shake");
     const nightIndex = supplements.findIndex(s => s.name === "Whey Night");
@@ -81,7 +88,7 @@ function renderSupplements() {
   }
 
   supplements.forEach(s => {
-    const supp = { ...s }; // Lokale Kopie
+    const supp = { ...s };
     if (supp.name === "Whey Shake") {
       supp.icons[1] = state.dayType === "rest" ? "⏰" : "🤯";
     }
@@ -117,17 +124,20 @@ function renderSupplements() {
   document.getElementById("restBtn").classList.toggle("active", state.dayType === "rest");
 }
 
+// 8) Button-Handler, um dayType zu wechseln
 function setDayType(type) {
   state.dayType = type;
   saveState();
   renderSupplements();
 }
 
+// 9) Notizen-Eingabe: bei jeder Änderung speichern
 document.getElementById("notes").addEventListener("input", e => {
   state.notes = e.target.value;
   saveState();
 });
 
+// 10) Import-Funktion (JSON) – unverändert
 function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -144,6 +154,7 @@ function importData(event) {
   reader.readAsText(file);
 }
 
+// 11) Stats-Popup ein-/ausblenden
 function toggleStatsPopup() {
   const popup = document.getElementById("statsPopup");
   popup.style.display = popup.style.display === "none" ? "block" : "none";
@@ -185,9 +196,10 @@ function renderStatsChart(range = "week") {
 }
 
 // ────────────────────────────────────────────
-// Neu: CSV-Export ohne Counter, mit deutschen Status-Begriffen
+// 12) Neu: CSV-Export ohne Counter, mit deutschen Status-Begriffen
 // ────────────────────────────────────────────
 function exportCSV() {
+  console.log("exportCSV wurde aufgerufen"); // Debug: Funktion läuft
   // 1. Kopfzeile mit deutschen Spaltennamen
   const headers = [
     "name",
@@ -205,29 +217,22 @@ function exportCSV() {
     const dayType = state.dayType;
     // EinnahmeStatus: "eingenommen" oder "nicht eingenommen"
     const einnahmeStatus = state.checks[name] ? "eingenommen" : "nicht eingenommen";
-    // Datum – hier korrekt in Anführungszeichen verpackt
+    // Datum – in Anführungszeichen, damit Excel/Sheets es als eine Zelle liest
     const lastDateRaw = state.lastDate;
     const lastDate = `"${lastDateRaw}"`;
     // PauseStatus: "Pause" oder "keine Pause"
     const pauseStatus = isInPause(name) ? "Pause" : "keine Pause";
 
-    // Baue die CSV-Zeile
-    const row = [
-      name,
-      dayType,
-      einnahmeStatus,
-      lastDate,
-      pauseStatus
-    ];
+    const row = [name, dayType, einnahmeStatus, lastDate, pauseStatus];
     csvRows.push(row.join(","));
   }
 
-  // 3. Leerzeile und Notizen (falls vorhanden)
+  // 3. Leerzeile und Notizen
   csvRows.push("");
   const notesEscaped = state.notes ? state.notes.replace(/\r?\n/g, "\\r\\n") : "";
   csvRows.push(`notes,"${notesEscaped}"`);
 
-  // 4. Gesamten CSV-String zusammenfügen
+  // 4. Gesamten CSV-Text zusammenfügen
   const csvString = csvRows.join("\r\n");
 
   // 5. Download-Link im DOM anlegen und klicken
@@ -236,12 +241,11 @@ function exportCSV() {
   const a = document.createElement("a");
   a.href = url;
   a.download = "supplement-data.csv";
-  // Erst ins DOM einhängen, dann klicken, dann entfernen
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
 
-  // 6. URL-Objekt freigeben (optional)
+  // 6. URL-Objekt freigeben
   setTimeout(() => {
     URL.revokeObjectURL(url);
   }, 1000);
@@ -252,5 +256,5 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js');
 }
 
-// Beim Laden der Seite Supplement-Liste rendern
+// Beim initialen Laden Supplements rendern
 renderSupplements();
