@@ -154,21 +154,21 @@ function importData(event) {
   reader.readAsText(file);
 }
 
-// 11) Stats-Popup ein-/ausblenden, plus Body-Scroll steuern
+// 11) Stats-Popup (Overlay) ein-/ausblenden, plus Body-Scroll steuern
 function toggleStatsPopup() {
-  const popup = document.getElementById("statsPopup");
-  const isCurrentlyOpen = popup.style.display === "block";
+  const overlay = document.getElementById("overlayStats");
+  const isCurrentlyOpen = overlay.style.display === "flex";
 
   if (isCurrentlyOpen) {
-    // Popup wird geschlossen
-    popup.style.display = "none";
+    // Overlay + Popup schließen
+    overlay.style.display = "none";
     document.body.style.overflow = ""; // Body-Scroll wieder erlauben
   } else {
-    // Popup wird geöffnet
-    popup.style.display = "block";
+    // Overlay + Popup öffnen
+    overlay.style.display = "flex";
     document.body.style.overflow = "hidden"; // Body-Scroll ausschalten
 
-    // Anzeige initiale Statistik
+    // Initiales Rendern der Statistik (Woche oder Monat)
     renderStatsChart(currentRange);
   }
 }
@@ -207,11 +207,11 @@ function renderStatsChart(range = "week") {
   });
 }
 
-// 12) CSV-Export (global an window gebunden, mit neuen Header-Namen und ohne Leerzeile)
+// 12) CSV-Export (global an window gebunden, mit Header-Namen und ohne Leerzeile)
 window.exportCSV = function() {
-  console.log("exportCSV wurde über window aufgerufen"); // Debug-Ausgabe
+  console.log("exportCSV wurde über window aufgerufen");
 
-  // 1. Kopfzeile mit den neuen deutschen Spaltennamen
+  // 1. Kopfzeile mit den deutschen Spaltennamen
   const headers = [
     "Supplement",   // statt "name"
     "Aktivität",    // statt "dayType"
@@ -222,7 +222,7 @@ window.exportCSV = function() {
   const csvRows = [];
   csvRows.push(headers.join(","));
 
-  // 2. Pro Supplement eine Zeile mit den entsprechenden Werten
+  // 2. Pro Supplement eine Zeile mit Werten
   for (const supp of supplementsBase) {
     const supplementName = supp.name;
     const aktivitaet = state.dayType;
@@ -242,7 +242,7 @@ window.exportCSV = function() {
   // 4. Gesamten CSV-Text zusammenfügen
   const csvString = csvRows.join("\r\n");
 
-  // 5. Download-Link im DOM anlegen und klicken
+  // 5. Download-Link erstellen und klicken
   const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -252,7 +252,7 @@ window.exportCSV = function() {
   a.click();
   document.body.removeChild(a);
 
-  // 6. URL-Objekt freigeben
+  // 6. URL-Objekt wieder freigeben
   setTimeout(() => {
     URL.revokeObjectURL(url);
   }, 1000);
