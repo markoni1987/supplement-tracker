@@ -1,5 +1,5 @@
 /* --------------------------------------------
-   style.css – komplett neu (Grafik etwas kleiner, Y-Achsen-Strich entfernt)
+   style.css – leicht angehoben (Chart 170px)
    -------------------------------------------- */
 
 /* --------------------------------------------
@@ -152,7 +152,7 @@ textarea {
   box-shadow: 0 0 10px #000000;
   max-width: 540px;            /* etwas schmaler */
   width: 80%;
-  max-height: 35%;             /* Höhe reduziert auf 35% des Viewports */
+  max-height: 37%;             /* leicht verändert, um Platz für 170px Chart zu schaffen */
   overflow-y: hidden;          /* kein Scrollen nötig */
   color: #ffffff;
   display: flex;
@@ -189,12 +189,12 @@ textarea {
 }
 
 /* --------------------------------------------
-   Canvas für Chart – Höhe per CSS (statt inline)
+   Canvas für Chart – Höhe leicht erhöht
    -------------------------------------------- */
 #statsChart {
   display: block;
   margin-top: 0.5rem;
   background-color: transparent;
   width: 100% !important;
-  height: 150px !important;    /* von 160px auf 150px verkleinert */
+  height: 170px !important;    /* jetzt 170px (statt 150px) */
 }
