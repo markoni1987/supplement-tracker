@@ -164,7 +164,7 @@ textarea {
    Stil für das Upload-Label („Importieren“)
    -------------------------------------------- */
 .upload-button input[type="file"] {
-  display: none; /* Versteckt das Dateieingabe-Feld selbst */
+  display: none; /* Versteckt das Dateieingabe-Feld */
 }
 
 /* --------------------------------------------
@@ -172,5 +172,5 @@ textarea {
    bleibt zentriert durch .button-group
    -------------------------------------------- */
 .bottom-buttons {
-  margin-top: 1rem; /* Option: Abstand nach oben */
+  margin-top: 1rem; /* optionaler Abstand nach oben */
 }
