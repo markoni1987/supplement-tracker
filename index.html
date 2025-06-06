@@ -30,11 +30,9 @@
     </label>
   </div>
 
-  <!-- Dieses Overlay deckt den gesamten Viewport ab, sobald es aktiv ist -->
+  <!-- Overlay + Modal für Statistik (initial ausgeblendet) -->
   <div id="overlayStats" onclick="toggleStatsPopup()">
-    <!-- Klick irgendwo im dunklen Bereich schließt das Popup ebenfalls -->
     <div id="statsPopup" onclick="event.stopPropagation()">
-      <!-- Popup-Inhalt bleibt erhalten -->
       <div class="stats-controls">
         <button onclick="renderStatsChart('week')">Woche</button>
         <button onclick="renderStatsChart('month')">Monat</button>
