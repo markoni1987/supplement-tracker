@@ -1,5 +1,5 @@
 /* --------------------------------------------
-   style.css – komplett neu (Buttons noch kleiner)
+   style.css – komplett neu (Grafik etwas kleiner, Y-Achsen-Strich entfernt)
    -------------------------------------------- */
 
 /* --------------------------------------------
@@ -150,9 +150,9 @@ textarea {
   padding: 1rem;
   border-radius: 10px;
   box-shadow: 0 0 10px #000000;
-  max-width: 560px;            /* leicht schmaler als vorher */
+  max-width: 540px;            /* etwas schmaler */
   width: 80%;
-  max-height: 38%;             /* etwas kompakter */
+  max-height: 35%;             /* Höhe reduziert auf 35% des Viewports */
   overflow-y: hidden;          /* kein Scrollen nötig */
   color: #ffffff;
   display: flex;
@@ -167,20 +167,20 @@ textarea {
 .stats-controls {
   display: flex;
   justify-content: center;
-  gap: 0.25rem;                /* noch weniger Abstand */
-  margin: 0 auto 0.4rem auto;  /* zentriert, kleinerer Abstand nach unten */
+  gap: 0.2rem;                 /* nochmals geringerer Abstand */
+  margin: 0 auto 0.3rem auto;  /* zentriert, kleinerer Abstand nach unten */
   width: 100%;
 }
 
 .stats-controls button {
   background-color: #444444;
   border: none;
-  padding: 0.25rem 0.5rem;     /* weiter verkleinerte Innenabstände */
+  padding: 0.2rem 0.4rem;     /* weiter verkleinerte Innenabstände */
   border-radius: 8px;
   color: #ffffff;
   cursor: pointer;
-  font-size: 0.85rem;          /* noch kleinere Schrift */
-  min-width: 50px;             /* geringere Mindestbreite */
+  font-size: 0.8rem;          /* noch kleinere Schrift */
+  min-width: 45px;            /* geringere Mindestbreite */
   transition: background-color 0.2s ease;
 }
 
@@ -189,10 +189,12 @@ textarea {
 }
 
 /* --------------------------------------------
-   Canvas für Chart
+   Canvas für Chart – Höhe per CSS (statt inline)
    -------------------------------------------- */
 #statsChart {
   display: block;
   margin-top: 0.5rem;
   background-color: transparent;
+  width: 100% !important;
+  height: 150px !important;    /* von 160px auf 150px verkleinert */
 }
