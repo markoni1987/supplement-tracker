@@ -139,20 +139,19 @@ textarea {
   box-shadow: 0 0 10px #000;
   max-width: 600px;
   width: 85%;                  /* etwas schmaler, damit mehr Platz bleibt */
-  /* Da das Canvas nun nur 150px hoch ist, reicht 40% des Viewports: */
-  max-height: 40%;             
+  /* Da das Canvas nun 190px hoch ist, reicht 50% des Viewports: */
+  max-height: 50%;
   overflow-y: hidden;          /* kein Scrollen mehr nötig */
   color: #fff;
 }
 
 /* --------------------------------------------
-   Canvas-Feld im Popup (nun kleiner) 
+   Canvas-Feld im Popup (nun 190px hoch) 
    -------------------------------------------- */
-/* Die Höhe wird hier nochmal mit !important gesetzt, 
-   um sicherzustellen, dass Chart.js nichts anderes überschreibt */
+/* !important stellt sicher, dass Chart.js es nicht überschreibt */
 #statsChart {
   width: 100% !important;
-  height: 150px !important;    /* statt 200px → passt komplett in das Modal */
+  height: 190px !important;
   background-color: transparent;
   display: block;
   margin-top: 1rem;
