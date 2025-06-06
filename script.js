@@ -5,7 +5,7 @@
 // 1) Definition aller Supplements und ihrer Zyklus-/Icon-Daten
 const supplementsBase = [
   { name: "Vitamin B12", icons: ["🩸", "⏰"], color: "#8B0000", restDay: true, cycle: [6, 2] },
-  { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#9ACD32", restDay: true, cycle: [6, 2] }, // dunkleres Grün
+  { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#6B8E23", restDay: true, cycle: [6, 2] }, // dunkleres Olivgrün
   { name: "D3 + K2", icons: ["🦴", "⏰"], color: "#D3D3D3", restDay: true, cycle: [8, 2] },
   { name: "Omega 3", icons: ["🧠", "⏰"], color: "#FF69B4", restDay: true, cycle: [6, 1] },
   { name: "Magnesium", icons: ["💤", "🌙"], color: "#1E90FF", restDay: true },   // helleres Blau
@@ -175,8 +175,7 @@ function toggleStatsPopup() {
 
 // Stelle sicher, dass das Popup beim ersten Laden geschlossen bleibt
 document.addEventListener("DOMContentLoaded", () => {
-  const overlay = document.getElementById("overlayStats");
-  overlay.style.display = "none";
+  document.getElementById("overlayStats").style.display = "none";
 });
 
 let currentRange = "week";
@@ -184,19 +183,16 @@ function renderStatsChart(range = "week") {
   currentRange = range;
   console.log("▶ renderStatsChart aufgerufen mit:", range);
 
-  // Filter: nur Supplements, die HEUTE per Checkbox als eingenommen markiert sind
-  const selectedSupplements = supplementsBase.filter(supp => state.checks[supp.name]);
-
-  // Labels und Daten nur für ausgewählte Supplements
-  const labels = selectedSupplements.map(s => s.name);
+  // Wir zeigen jetzt **alle** Supplements in der Statistik, unabhängig von Checkboxen:
+  const labels = supplementsBase.map(s => s.name);
   const days = range === "week" ? 7 : 30;
-  const data = selectedSupplements.map(s => {
+  const data = supplementsBase.map(s => {
     const c = state.counters[s.name] || 0;
     return Math.min(100, Math.round((c % (days + 1)) / days * 100));
   });
 
-  // Die überarbeiteten Balkenfarben (eine Farbe pro ausgewähltes Supplement)
-  const colors = selectedSupplements.map(s => s.color);
+  // Die zugehörigen Balkenfarben:
+  const colors = supplementsBase.map(s => s.color);
 
   const canvas = document.getElementById("statsChart");
   const ctx = canvas.getContext("2d");
@@ -204,21 +200,10 @@ function renderStatsChart(range = "week") {
   // Prüfe, ob das Canvas korrekt 190px hoch ist
   console.log("→ Canvas-Höhe (px):", canvas.offsetHeight);
 
-  // Zerstöre vorherigen Chart, falls vorhanden
+  // Vorherigen Chart zerstören, falls vorhanden
   if (window.myChart) window.myChart.destroy();
 
-  // Falls kein Supplement ausgewählt ist, zeichne ein leeres Chart mit Hinweistext
-  if (labels.length === 0) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#fff";
-    ctx.font = "16px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("Keine Supplement-Daten ausgewählt", canvas.width / 2, canvas.height / 2);
-    console.log("→ Kein Supplement ausgewählt: Chart bleibt leer.");
-    return;
-  }
-
-  // Ansonsten: Erstelle das Chart mit Daten und Farben
+  // Chart erzeugen
   window.myChart = new Chart(ctx, {
     type: "bar",
     data: {
