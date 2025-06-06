@@ -196,36 +196,36 @@ function renderStatsChart(range = "week") {
 }
 
 // ────────────────────────────────────────────
-// 12) CSV-Export (global an window gebunden)
+// 12) CSV-Export (global an window gebunden, mit neuen Header-Namen)
 // ────────────────────────────────────────────
 window.exportCSV = function() {
   console.log("exportCSV wurde über window aufgerufen"); // Debug-Ausgabe
 
-  // 1. Kopfzeile mit deutschen Spaltennamen
+  // 1. Kopfzeile mit den neuen deutschen Spaltennamen
   const headers = [
-    "name",
-    "dayType",
-    "EinnahmeStatus",  // statt "checked"
-    "lastDate",
-    "PauseStatus"     // statt "inPause"
+    "Supplement",   // statt "name"
+    "Aktivität",    // statt "dayType"
+    "Status",       // statt "EinnahmeStatus"
+    "Datum",        // statt "lastDate"
+    "Pause"         // statt "PauseStatus"
   ];
   const csvRows = [];
   csvRows.push(headers.join(","));
 
-  // 2. Pro Supplement eine Zeile mit Werten
+  // 2. Pro Supplement eine Zeile mit den entsprechenden Werten
   for (const supp of supplementsBase) {
-    const name = supp.name;
-    const dayType = state.dayType;
-    const einnahmeStatus = state.checks[name] ? "eingenommen" : "nicht eingenommen";
-    const lastDateRaw = state.lastDate;
-    const lastDate = `"${lastDateRaw}"`;
-    const pauseStatus = isInPause(name) ? "Pause" : "keine Pause";
+    const supplementName = supp.name;
+    const aktivitaet = state.dayType;
+    const status = state.checks[supplementName] ? "eingenommen" : "nicht eingenommen";
+    const datumRaw = state.lastDate;
+    const datum = `"${datumRaw}"`;
+    const pause = isInPause(supplementName) ? "Pause" : "keine Pause";
 
-    const row = [name, dayType, einnahmeStatus, lastDate, pauseStatus];
+    const row = [supplementName, aktivitaet, status, datum, pause];
     csvRows.push(row.join(","));
   }
 
-  // 3. Leerzeile und Notizen
+  // 3. Leerzeile und Notizen (falls vorhanden)
   csvRows.push("");
   const notesEscaped = state.notes ? state.notes.replace(/\r?\n/g, "\\r\\n") : "";
   csvRows.push(`notes,"${notesEscaped}"`);
