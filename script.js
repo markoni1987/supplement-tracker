@@ -5,13 +5,13 @@
 // 1) Definition aller Supplements und ihrer Zyklus-/Icon-Daten
 const supplementsBase = [
   { name: "Vitamin B12", icons: ["🩸", "⏰"], color: "#8B0000", restDay: true, cycle: [6, 2] },
-  { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#6B8E23", restDay: true, cycle: [6, 2] }, // dunkleres Olivgrün
+  { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#6B8E23", restDay: true, cycle: [6, 2] },
   { name: "D3 + K2", icons: ["🦴", "⏰"], color: "#D3D3D3", restDay: true, cycle: [8, 2] },
   { name: "Omega 3", icons: ["🧠", "⏰"], color: "#FF69B4", restDay: true, cycle: [6, 1] },
-  { name: "Magnesium", icons: ["💤", "🌙"], color: "#1E90FF", restDay: true },   // helleres Blau
+  { name: "Magnesium", icons: ["💤", "🌙"], color: "#1E90FF", restDay: true },
   { name: "Citrullin", icons: ["💪", "🏃"], color: "#f1c40f", restDay: false },
   { name: "Creatin", icons: ["🏋️", "🏃"], color: "#696969", restDay: false, cycle: [6, 2] },
-  { name: "Whey Shake", icons: ["🥤", "🤯"], color: "#87CEFA", restDay: true },  // helleres Blau
+  { name: "Whey Shake", icons: ["🥤", "🤯"], color: "#87CEFA", restDay: true },
   { name: "Whey Night", icons: ["🥤💤", "😴"], color: "#f77f00", restDay: false }
 ];
 
@@ -20,9 +20,9 @@ let state = JSON.parse(localStorage.getItem("supplements-state")) || {
   dayType: "training",
   notes: "",
   checks: {},          // aktuell angeklickte Supplements für heute
-  history: {},         // z.B. { "Fri Jun 06 2025": { "Vitamin B12": true, "Ashwagandha": false, ... }, ... }
+  history: {},         // { "Fri Jun 06 2025": { "Vitamin B12": true, … }, … }
   lastDate: new Date().toDateString(),
-  counters: {}         // optional, bleibt für Zyklus-Logik erhalten
+  counters: {}         // für Zyklus-Logik
 };
 
 // 3) Funktion, um State in localStorage zu speichern
@@ -40,7 +40,7 @@ function resetDaily() {
     // 4.2) Häkchen für neuen Tag zurücksetzen
     state.checks = {};
 
-    // 4.3) Counter-Logik: nur für Supplements, die nicht in Pause sind
+    // 4.3) Counter-Logik (Supplement-Zyklen)
     for (const supp of supplementsBase) {
       if (!state.counters[supp.name]) state.counters[supp.name] = 0;
       if (!isInPause(supp.name)) {
@@ -54,7 +54,7 @@ function resetDaily() {
   }
 }
 
-// 5) Prüfen, ob ein Supplement gerade in einer Pause ist (bleibt unverändert)
+// 5) Prüfen, ob ein Supplement gerade in einer Pause ist
 function isInPause(name) {
   const supp = supplementsBase.find(s => s.name === name);
   if (!supp?.cycle) return false;
@@ -64,7 +64,7 @@ function isInPause(name) {
   return counter % total >= active;
 }
 
-// 6) Filtert und sortiert die Supplements je nach dayType (bleibt unverändert)
+// 6) Filtert und sortiert die Supplements je nach dayType
 function getSupplementsToShow() {
   const isRest = state.dayType === "rest";
   return supplementsBase
@@ -79,7 +79,7 @@ function getSupplementsToShow() {
     });
 }
 
-// 7) Rendern der Supplements im DOM (bleibt unverändert)
+// 7) Rendern der Supplements im DOM
 function renderSupplements() {
   resetDaily();
   const container = document.getElementById("supplements");
@@ -133,20 +133,20 @@ function renderSupplements() {
   document.getElementById("restBtn").classList.toggle("active", state.dayType === "rest");
 }
 
-// 8) Button-Handler, um dayType zu wechseln (bleibt unverändert)
+// 8) Button-Handler, um dayType zu wechseln
 function setDayType(type) {
   state.dayType = type;
   saveState();
   renderSupplements();
 }
 
-// 9) Notizen-Eingabe: bei jeder Änderung speichern (bleibt unverändert)
+// 9) Notizen-Eingabe: bei jeder Änderung speichern
 document.getElementById("notes").addEventListener("input", e => {
   state.notes = e.target.value;
   saveState();
 });
 
-// 10) Import-Funktion (JSON) – Achtung: History wird mitimportiert
+// 10) Import-Funktion (JSON) – History wird übernommen
 function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -192,7 +192,7 @@ function renderStatsChart(range = "week") {
   currentRange = range;
   console.log("▶ renderStatsChart aufgerufen mit:", range);
 
-  // 1) Bestimme "today" und erstelle Liste der letzten N Tage
+  // 1) Bestimme "today" und erzeuge Liste der letzten N Tage (inkl. heute)
   const days = range === "week" ? 7 : 30;
   const today = new Date();
   const dateStrings = [];
@@ -201,7 +201,7 @@ function renderStatsChart(range = "week") {
     dateStrings.push(dt.toDateString());
   }
 
-  // 2) Für jedes Supplement: Prozentsatz der Tage in dateStrings, an denen es eingenommen wurde
+  // 2) Für jedes Supplement: Prozentsatz der Tage, an denen es eingenommen wurde
   const labels = [];
   const data = [];
   const colors = [];
@@ -226,14 +226,14 @@ function renderStatsChart(range = "week") {
   });
 
   console.log("→ Labels (Supplements):", labels);
-  console.log("→ Prozentuale Werte über die letzten", days, "Tage:", data);
+  console.log("→ Prozentwerte über die letzten", days, "Tage:", data);
   console.log("→ Farben:", colors);
 
   // 3) Chart erzeugen
   const canvas = document.getElementById("statsChart");
   const ctx = canvas.getContext("2d");
 
-  // Canvas-Höhe überprüfen (sollte =190px sein)
+  // Canvas-Höhe überprüfen (sollte =160px sein)
   console.log("→ Canvas-Höhe (px):", canvas.offsetHeight);
 
   // Vorherigen Chart zerstören, falls vorhanden
@@ -243,7 +243,7 @@ function renderStatsChart(range = "week") {
   const allZero = data.every(v => v === 0);
   if (allZero) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = "#ffffff";
     ctx.font = "16px Arial";
     ctx.textAlign = "center";
     ctx.fillText("Keine Daten in diesem Zeitraum", canvas.width / 2, canvas.height / 2);
@@ -264,12 +264,34 @@ function renderStatsChart(range = "week") {
       }]
     },
     options: {
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false }
+      },
       scales: {
+        x: {
+          ticks: {
+            font: {
+              size: 10      // Schriftgröße der X-Achsen-Beschriftungen (Labels)
+            },
+            color: "#ffffff"  // Schriftfarbe der X-Achsen-Labels
+          },
+          grid: {
+            display: false  // vertikale Gitterlinien unter den X-Ticks ausblenden
+          }
+        },
         y: {
           beginAtZero: true,
           max: 100,
-          ticks: { stepSize: 10 }
+          ticks: {
+            stepSize: 10,
+            font: {
+              size: 10      // Schriftgröße der Y-Achsen-Beschriftungen
+            },
+            color: "#ffffff"  // Schriftfarbe der Y-Achsen
+          },
+          grid: {
+            color: "rgba(255,255,255,0.1)" // horizontale Linienfarbe (sehr dezent)
+          }
         }
       },
       responsive: true,
