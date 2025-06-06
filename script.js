@@ -19,9 +19,10 @@ const supplementsBase = [
 let state = JSON.parse(localStorage.getItem("supplements-state")) || {
   dayType: "training",
   notes: "",
-  checks: {},
-  counters: {},
-  lastDate: new Date().toDateString()
+  checks: {},          // aktuell angeklickte Supplements für heute
+  history: {},         // z.B. { "Fri Jun 06 2025": { "Vitamin B12": true, "Ashwagandha": false, ... }, ... }
+  lastDate: new Date().toDateString(),
+  counters: {}         // optional, bleibt für Zyklus-Logik erhalten
 };
 
 // 3) Funktion, um State in localStorage zu speichern
@@ -29,23 +30,31 @@ function saveState() {
   localStorage.setItem("supplements-state", JSON.stringify(state));
 }
 
-// 4) Wenn ein neuer Tag beginnt, Counter hochzählen und Häkchen resetten
+// 4) Wenn ein neuer Tag beginnt, History aktualisieren und Counter hochzählen
 function resetDaily() {
   const today = new Date().toDateString();
   if (state.lastDate !== today) {
-    state.lastDate = today;
+    // 4.1) Speichere den gestrigen „checks“-Zustand in history
+    state.history[state.lastDate] = { ...state.checks };
+
+    // 4.2) Häkchen für neuen Tag zurücksetzen
     state.checks = {};
+
+    // 4.3) Counter-Logik: nur für Supplements, die nicht in Pause sind
     for (const supp of supplementsBase) {
       if (!state.counters[supp.name]) state.counters[supp.name] = 0;
       if (!isInPause(supp.name)) {
         state.counters[supp.name]++;
       }
     }
+
+    // 4.4) lastDate updaten und speichern
+    state.lastDate = today;
     saveState();
   }
 }
 
-// 5) Prüfen, ob ein Supplement gerade in einer Pause ist
+// 5) Prüfen, ob ein Supplement gerade in einer Pause ist (bleibt unverändert)
 function isInPause(name) {
   const supp = supplementsBase.find(s => s.name === name);
   if (!supp?.cycle) return false;
@@ -55,7 +64,7 @@ function isInPause(name) {
   return counter % total >= active;
 }
 
-// 6) Filtert und sortiert die Supplements je nach dayType
+// 6) Filtert und sortiert die Supplements je nach dayType (bleibt unverändert)
 function getSupplementsToShow() {
   const isRest = state.dayType === "rest";
   return supplementsBase
@@ -70,7 +79,7 @@ function getSupplementsToShow() {
     });
 }
 
-// 7) Rendern der Supplements im DOM
+// 7) Rendern der Supplements im DOM (bleibt unverändert)
 function renderSupplements() {
   resetDaily();
   const container = document.getElementById("supplements");
@@ -124,20 +133,20 @@ function renderSupplements() {
   document.getElementById("restBtn").classList.toggle("active", state.dayType === "rest");
 }
 
-// 8) Button-Handler, um dayType zu wechseln
+// 8) Button-Handler, um dayType zu wechseln (bleibt unverändert)
 function setDayType(type) {
   state.dayType = type;
   saveState();
   renderSupplements();
 }
 
-// 9) Notizen-Eingabe: bei jeder Änderung speichern
+// 9) Notizen-Eingabe: bei jeder Änderung speichern (bleibt unverändert)
 document.getElementById("notes").addEventListener("input", e => {
   state.notes = e.target.value;
   saveState();
 });
 
-// 10) Import-Funktion (JSON)
+// 10) Import-Funktion (JSON) – Achtung: History wird mitimportiert
 function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -183,33 +192,71 @@ function renderStatsChart(range = "week") {
   currentRange = range;
   console.log("▶ renderStatsChart aufgerufen mit:", range);
 
-  // Wir zeigen jetzt **alle** Supplements in der Statistik, unabhängig von Checkboxen:
-  const labels = supplementsBase.map(s => s.name);
+  // 1) Bestimme "today" und erstelle Liste der letzten N Tage
   const days = range === "week" ? 7 : 30;
-  const data = supplementsBase.map(s => {
-    const c = state.counters[s.name] || 0;
-    return Math.min(100, Math.round((c % (days + 1)) / days * 100));
+  const today = new Date();
+  const dateStrings = [];
+  for (let i = 0; i < days; i++) {
+    const dt = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
+    dateStrings.push(dt.toDateString());
+  }
+
+  // 2) Für jedes Supplement: Prozentsatz der Tage in dateStrings, an denen es eingenommen wurde
+  const labels = [];
+  const data = [];
+  const colors = [];
+
+  supplementsBase.forEach(supp => {
+    let countTaken = 0;
+    dateStrings.forEach((dateStr, idx) => {
+      if (idx === 0) {
+        // heute: state.checks
+        if (state.checks[supp.name]) countTaken++;
+      } else {
+        // ältere Tage: state.history
+        const entry = state.history[dateStr];
+        if (entry && entry[supp.name]) countTaken++;
+      }
+    });
+
+    const percent = Math.round((countTaken / days) * 100);
+    labels.push(supp.name);
+    data.push(percent);
+    colors.push(supp.color);
   });
 
-  // Die zugehörigen Balkenfarben:
-  const colors = supplementsBase.map(s => s.color);
+  console.log("→ Labels (Supplements):", labels);
+  console.log("→ Prozentuale Werte über die letzten", days, "Tage:", data);
+  console.log("→ Farben:", colors);
 
+  // 3) Chart erzeugen
   const canvas = document.getElementById("statsChart");
   const ctx = canvas.getContext("2d");
 
-  // Prüfe, ob das Canvas korrekt 190px hoch ist
+  // Canvas-Höhe überprüfen (sollte =190px sein)
   console.log("→ Canvas-Höhe (px):", canvas.offsetHeight);
 
   // Vorherigen Chart zerstören, falls vorhanden
   if (window.myChart) window.myChart.destroy();
 
-  // Chart erzeugen
+  // Leere Canvas, falls alle Werte null sind
+  const allZero = data.every(v => v === 0);
+  if (allZero) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#fff";
+    ctx.font = "16px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Keine Daten in diesem Zeitraum", canvas.width / 2, canvas.height / 2);
+    console.log("→ Alle Werte 0: Zeige Hinweistext.");
+    return;
+  }
+
   window.myChart = new Chart(ctx, {
     type: "bar",
     data: {
       labels,
       datasets: [{
-        label: "% Einnahme",
+        label: "% der Einnahmetage",
         data,
         backgroundColor: colors,
         borderRadius: 5,
@@ -218,13 +265,19 @@ function renderStatsChart(range = "week") {
     },
     options: {
       plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, max: 100 } },
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100,
+          ticks: { stepSize: 10 }
+        }
+      },
       responsive: true,
       maintainAspectRatio: false
     }
   });
 
-  console.log("→ Chart-Datenfarben:", window.myChart.data.datasets[0].backgroundColor);
+  console.log("→ Chart-Datenfarben (final):", window.myChart.data.datasets[0].backgroundColor);
 }
 
 // 12) CSV-Export (global an window gebunden, mit Header-Namen und ohne Leerzeile)
