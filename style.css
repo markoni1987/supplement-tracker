@@ -137,8 +137,8 @@ textarea {
   box-shadow: 0 0 10px #000;
   max-width: 600px;
   width: 85%;                  /* etwas schmaler, damit mehr Platz bleibt */
-  max-height: 50%;
-  overflow-y: hidden;          /* kein Scrollen nötig (Chart ist fest 190px hoch) */
+  max-height: 40%;             /* reduziert von 50% auf 40% */
+  overflow-y: hidden;          /* kein Scrollen nötig (Chart ist fest 160px hoch) */
   color: #fff;
 }
 
