@@ -1,7 +1,14 @@
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open("supplement-tracker-v1").then(cache => {
-      return cache.addAll(["index.html", "script.js", "manifest.json", "icon.png"]);
+      return cache.addAll([
+        "index.html",
+        "style.css",
+        "script.js",
+        "manifest.json",
+        "icon.png",
+        // Falls du weitere Assets hast, hier ergänzen
+      ]);
     })
   );
 });
