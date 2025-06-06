@@ -1,10 +1,14 @@
 /* --------------------------------------------
-   Allgemeine Styles
+   style.css – komplett neu
+   -------------------------------------------- */
+
+/* --------------------------------------------
+   Grundlegendes Layout
    -------------------------------------------- */
 body {
   font-family: Arial, sans-serif;
   background-color: #121212;
-  color: #fff;
+  color: #ffffff;
   margin: 0;
   padding: 1rem;
 }
@@ -16,7 +20,7 @@ h1 {
 }
 
 /* --------------------------------------------
-   Button-Grundstil (für <button> und .upload-button)
+   Button-Grundstil (für alle Buttons)
    -------------------------------------------- */
 button,
 .upload-button {
@@ -25,27 +29,29 @@ button,
   border: none;
   border-radius: 10px;
   font-size: 1rem;
-  background-color: #444;
-  color: white;
+  background-color: #444444;
+  color: #ffffff;
   cursor: pointer;
   text-align: center;
+  transition: background-color 0.2s ease;
 }
 
 button:hover,
 .upload-button:hover {
-  background-color: #555;
+  background-color: #555555;
 }
 
 /* --------------------------------------------
-   Zentrierung aller Buttons in .button-group
+   Gruppen von Buttons – zentriert anordnen
    -------------------------------------------- */
 .button-group {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 /* --------------------------------------------
-   Spezielle Mindestbreiten (Training/Rest/Stats)
+   Spezielle Mindestbreiten für Haupt-Buttons
    -------------------------------------------- */
 #trainingBtn,
 #restBtn {
@@ -57,14 +63,14 @@ button:hover,
 }
 
 /* --------------------------------------------
-   Aktiver Button (blau) 
+   Aktiver Button (blau hinterlegt)
    -------------------------------------------- */
 button.active {
   background-color: #007bff;
 }
 
 /* --------------------------------------------
-   Supplement-Karten
+   Supplement-Elemente
    -------------------------------------------- */
 .supplement {
   display: flex;
@@ -103,61 +109,15 @@ button.active {
 textarea {
   width: 95%;
   max-width: 420px;
-  margin: 1rem auto 0;
+  margin: 1rem auto 0 auto;
   padding: 0.5rem;
   font-size: 1rem;
   border-radius: 8px;
   border: none;
   background-color: #1f1f1f;
-  color: #fff;
+  color: #ffffff;
   display: block;
-}
-
-/* --------------------------------------------
-   Overlay (ganze Seite, halbdurchsichtig) 
-   -------------------------------------------- */
-#overlayStats {
-  display: none;               /* initial unsichtbar */
-  position: fixed;
-  inset: 0;                    /* oben=0, rechts=0, unten=0, links=0 */
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;                /* über allen anderen Inhalten */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* --------------------------------------------
-   Stats-Pop-up (Modal-Fenster) 
-   -------------------------------------------- */
-#statsPopup {
-  background-color: #222;
-  padding: 1rem;
-  border-radius: 10px;
-  box-shadow: 0 0 10px #000;
-  max-width: 600px;
-  width: 85%;                  /* etwas schmaler, damit mehr Platz bleibt */
-  max-height: 40%;             /* reduziert von 50% auf 40% */
-  overflow-y: hidden;          /* kein Scrollen nötig (Chart ist fest 160px hoch) */
-  color: #fff;
-}
-
-/* --------------------------------------------
-   Buttons im Stats-Pop-up (zentriert) 
-   -------------------------------------------- */
-.stats-controls {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin: 0 auto 0.5rem auto;  /* zentriert und etwas Abstand nach unten */
-  width: 100%;                 /* sorgt dafür, dass justify-content wirkt */
-}
-
-/* --------------------------------------------
-   Stil für das Upload-Label („Importieren“)
-   -------------------------------------------- */
-.upload-button input[type="file"] {
-  display: none;               /* Versteckt das Dateieingabe-Feld */
+  resize: vertical;
 }
 
 /* --------------------------------------------
@@ -165,5 +125,76 @@ textarea {
    bleibt zentriert durch .button-group
    -------------------------------------------- */
 .bottom-buttons {
-  margin-top: 1rem;            /* optionaler Abstand nach oben */
+  margin-top: 1rem;
+}
+
+/* --------------------------------------------
+   Overlay (vollflächig, halbdurchsichtig)
+   -------------------------------------------- */
+#overlayStats {
+  display: none;               /* initial unsichtbar */
+  position: fixed;
+  inset: 0;                    /* oben=0, rechts=0, unten=0, links=0 */
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --------------------------------------------
+   Stats-Pop-up (Modal-Fenster)
+   -------------------------------------------- */
+#statsPopup {
+  background-color: #222222;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #000000;
+  max-width: 600px;
+  width: 85%;                  /* Breite passt sich an den Viewport an */
+  max-height: 40%;             /* Höhe auf 40% des Viewports begrenzt */
+  overflow-y: hidden;          /* kein Scrollen nötig, Chart hat feste Höhe */
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* --------------------------------------------
+   Buttons im Stats-Pop-up (Woche, Monat, ❌)
+   kompakter und zentriert
+   -------------------------------------------- */
+.stats-controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.3rem;
+  margin: 0 auto 0.5rem auto;  /* zentriert, Abstand nach unten */
+  width: 100%;
+}
+
+.stats-controls button {
+  background-color: #444444;
+  border: none;
+  padding: 0.3rem 0.6rem;     /* kompaktere Innenabstände */
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.9rem;          /* etwas kleinere Schrift */
+  min-width: 60px;            /* geringere Mindestbreite */
+  transition: background-color 0.2s ease;
+}
+
+.stats-controls button:hover {
+  background-color: #555555;
+}
+
+/* --------------------------------------------
+   Canvas für Chart (falls per CSS geregelt)
+   -------------------------------------------- */
+#statsChart {
+  /* Falls gewünscht, kann hier noch style-Anpassungen stehen – 
+     meistens reicht aber das inline-Attribut in index.html */
+  display: block;
+  margin-top: 0.5rem;
+  background-color: transparent;
 }
