@@ -59,7 +59,7 @@ function isInPause(name) {
 function getSupplementsToShow() {
   const isRest = state.dayType === "rest";
   return supplementsBase
-    .filter(s => isRest ? s.restDay : true)
+    .filter(s => (isRest ? s.restDay : true))
     .map(s => ({ ...s }))
     .sort((a, b) => {
       if (isRest) {
@@ -137,7 +137,7 @@ document.getElementById("notes").addEventListener("input", e => {
   saveState();
 });
 
-// 10) Import-Funktion (JSON) – unverändert
+// 10) Import-Funktion (JSON)
 function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -196,10 +196,11 @@ function renderStatsChart(range = "week") {
 }
 
 // ────────────────────────────────────────────
-// 12) Neu: CSV-Export ohne Counter, mit deutschen Status-Begriffen
+// 12) CSV-Export (global an window gebunden)
 // ────────────────────────────────────────────
-function exportCSV() {
-  console.log("exportCSV wurde aufgerufen"); // Debug: Funktion läuft
+window.exportCSV = function() {
+  console.log("exportCSV wurde über window aufgerufen"); // Debug-Ausgabe
+
   // 1. Kopfzeile mit deutschen Spaltennamen
   const headers = [
     "name",
@@ -215,12 +216,9 @@ function exportCSV() {
   for (const supp of supplementsBase) {
     const name = supp.name;
     const dayType = state.dayType;
-    // EinnahmeStatus: "eingenommen" oder "nicht eingenommen"
     const einnahmeStatus = state.checks[name] ? "eingenommen" : "nicht eingenommen";
-    // Datum – in Anführungszeichen, damit Excel/Sheets es als eine Zelle liest
     const lastDateRaw = state.lastDate;
     const lastDate = `"${lastDateRaw}"`;
-    // PauseStatus: "Pause" oder "keine Pause"
     const pauseStatus = isInPause(name) ? "Pause" : "keine Pause";
 
     const row = [name, dayType, einnahmeStatus, lastDate, pauseStatus];
@@ -249,12 +247,13 @@ function exportCSV() {
   setTimeout(() => {
     URL.revokeObjectURL(url);
   }, 1000);
-}
+};
 // ────────────────────────────────────────────
 
+// 13) Service Worker registrieren (PWA)
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js');
 }
 
-// Beim initialen Laden Supplements rendern
+// 14) Beim initialen Laden Supplements rendern
 renderSupplements();
