@@ -183,17 +183,17 @@ function renderStatsChart(range = "week") {
     return Math.min(100, Math.round((c % (days + 1)) / days * 100));
   });
 
-  // Die neuen Balkenfarben (solide, keine zusätzliche Transparenz)
+  // Die neuen Balkenfarben – aus deinem Lastmapping
   const colors = [
     "#8B0000",  // Vitamin B12: dunkles Blutrot
     "#ADFF2F",  // Ashwagandha: gelblich-grünlich
     "#D3D3D3",  // D3 + K2: helles Grau
     "#FF69B4",  // Omega 3: leicht dunkleres Pink
     "#00008B",  // Magnesium: dunkles, leuchtendes Blau
-    "#f1c40f",  // Citrullin (ungeändert)
+    "#f1c40f",  // Citrullin (unverändert)
     "#696969",  // Creatin: dunkleres Grau
     "#00BFFF",  // Whey Shake: helles leuchtendes Blau
-    "#f77f00"   // Whey Night (ungeändert)
+    "#f77f00"   // Whey Night (unverändert)
   ];
 
   const ctx = document.getElementById("statsChart").getContext("2d");
