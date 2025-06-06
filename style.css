@@ -1,5 +1,5 @@
 /* --------------------------------------------
-   style.css – komplett neu
+   style.css – komplett neu (Buttons noch kleiner)
    -------------------------------------------- */
 
 /* --------------------------------------------
@@ -24,11 +24,11 @@ h1 {
    -------------------------------------------- */
 button,
 .upload-button {
-  padding: 0.5rem 1rem;
-  margin: 0.3rem;
+  padding: 0.4rem 0.8rem;
+  margin: 0.2rem;
   border: none;
   border-radius: 10px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   background-color: #444444;
   color: #ffffff;
   cursor: pointer;
@@ -55,11 +55,11 @@ button:hover,
    -------------------------------------------- */
 #trainingBtn,
 #restBtn {
-  min-width: 130px;
+  min-width: 120px;
 }
 
 #statsBtn {
-  min-width: 90px;
+  min-width: 80px;
 }
 
 /* --------------------------------------------
@@ -150,10 +150,10 @@ textarea {
   padding: 1rem;
   border-radius: 10px;
   box-shadow: 0 0 10px #000000;
-  max-width: 600px;
-  width: 85%;                  /* Breite passt sich an den Viewport an */
-  max-height: 40%;             /* Höhe auf 40% des Viewports begrenzt */
-  overflow-y: hidden;          /* kein Scrollen nötig, Chart hat feste Höhe */
+  max-width: 560px;            /* leicht schmaler als vorher */
+  width: 80%;
+  max-height: 38%;             /* etwas kompakter */
+  overflow-y: hidden;          /* kein Scrollen nötig */
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -162,25 +162,25 @@ textarea {
 
 /* --------------------------------------------
    Buttons im Stats-Pop-up (Woche, Monat, ❌)
-   kompakter und zentriert
+   noch kompakter und zentriert
    -------------------------------------------- */
 .stats-controls {
   display: flex;
   justify-content: center;
-  gap: 0.3rem;
-  margin: 0 auto 0.5rem auto;  /* zentriert, Abstand nach unten */
+  gap: 0.25rem;                /* noch weniger Abstand */
+  margin: 0 auto 0.4rem auto;  /* zentriert, kleinerer Abstand nach unten */
   width: 100%;
 }
 
 .stats-controls button {
   background-color: #444444;
   border: none;
-  padding: 0.3rem 0.6rem;     /* kompaktere Innenabstände */
+  padding: 0.25rem 0.5rem;     /* weiter verkleinerte Innenabstände */
   border-radius: 8px;
   color: #ffffff;
   cursor: pointer;
-  font-size: 0.9rem;          /* etwas kleinere Schrift */
-  min-width: 60px;            /* geringere Mindestbreite */
+  font-size: 0.85rem;          /* noch kleinere Schrift */
+  min-width: 50px;             /* geringere Mindestbreite */
   transition: background-color 0.2s ease;
 }
 
@@ -189,11 +189,9 @@ textarea {
 }
 
 /* --------------------------------------------
-   Canvas für Chart (falls per CSS geregelt)
+   Canvas für Chart
    -------------------------------------------- */
 #statsChart {
-  /* Falls gewünscht, kann hier noch style-Anpassungen stehen – 
-     meistens reicht aber das inline-Attribut in index.html */
   display: block;
   margin-top: 0.5rem;
   background-color: transparent;
