@@ -114,36 +114,42 @@ textarea {
 }
 
 /* --------------------------------------------
-   Stats-Pop-up (zentriert, eigener Scroll)
+   Overlay (ganze Seite, halbdurchsichtig) 
+   -------------------------------------------- */
+#overlayStats {
+  display: none;              /* wird per JS gezeigt/versteckt */
+  position: fixed;
+  inset: 0;                   /* oben=0, rechts=0, unten=0, links=0 */
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;               /* über allen anderen Inhalten */
+  /* Inhalt (Popup) wird mittig ausgerichtet */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --------------------------------------------
+   Stats-Pop-up (Modal-Fenster) 
    -------------------------------------------- */
 #statsPopup {
-  display: none;
-
-  /* Fixiere das Popup in der Mitte des Bildschirms */
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
   background-color: #222;
   padding: 1rem;
   border-radius: 10px;
   box-shadow: 0 0 10px #000;
-  z-index: 1000;
-
-  /* Maximalgröße, damit es nicht über den Viewport hinausgeht */
-  width: 90%;
   max-width: 600px;
+  width: 90%;
   max-height: 80%;
-
-  /* Nur das Popup selbst darf scrollen */
-  overflow-y: auto;
+  overflow-y: auto;          /* nur Inhalt im Popup scrollt */
+  color: #fff;
 }
 
-/* Höhe und Styling für das Canvas im Popup */
+/* Canvas-Feld im Popup */
 #statsChart {
   height: 300px;
-  width: 100%; /* Vollbreite im Popup */
+  width: 100%;
+  background-color: transparent;
+  display: block;
+  margin-top: 1rem;
 }
 
 /* --------------------------------------------
@@ -153,7 +159,7 @@ textarea {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .stats-controls button {
@@ -181,5 +187,5 @@ textarea {
    bleibt zentriert durch .button-group
    -------------------------------------------- */
 .bottom-buttons {
-  margin-top: 1rem; /* Option: Abstand nach oben */
+  margin-top: 1rem; /* optionaler Abstand nach oben */
 }
