@@ -117,12 +117,13 @@ textarea {
    Overlay (ganze Seite, halbdurchsichtig) 
    -------------------------------------------- */
 #overlayStats {
-  display: none;              /* wird per JS gezeigt/versteckt */
+  display: none;              /* initial unsichtbar */
   position: fixed;
   inset: 0;                   /* oben=0, rechts=0, unten=0, links=0 */
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;               /* über allen anderen Inhalten */
-  /* Inhalt (Popup) wird mittig ausgerichtet */
+
+  /* Popup zentrieren */
   display: flex;
   align-items: center;
   justify-content: center;
