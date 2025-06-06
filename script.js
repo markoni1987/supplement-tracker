@@ -1,5 +1,5 @@
 // ------------------------------
-// script.js
+// script.js (mit Tips 3.1–3.3 umgesetzt)
 // ------------------------------
 
 // 1) Definition aller Supplements und ihrer Zyklus-/Icon-Daten
@@ -16,13 +16,14 @@ const supplementsBase = [
 ];
 
 // 2) Initialer State oder aus localStorage geladen
+//    history speichert pro Tag: { checks: { … }, counters: { … } }
 let state = JSON.parse(localStorage.getItem("supplements-state")) || {
   dayType: "training",
   notes: "",
-  checks: {},          // aktuell angeklickte Supplements für heute
-  history: {},         // { "Fri Jun 06 2025": { "Vitamin B12": true, … }, … }
+  checks: {},       // { "Vitamin B12": true/false, … }  — für heute
+  history: {},      // { "Tue Jun 04 2025": { checks: { … }, counters: { … } }, … }
   lastDate: new Date().toDateString(),
-  counters: {}         // für Zyklus-Logik
+  counters: {}      // { "Vitamin B12": <Zähler>, … } für Zyklus‐Logik
 };
 
 // 3) Funktion, um State in localStorage zu speichern
@@ -30,45 +31,92 @@ function saveState() {
   localStorage.setItem("supplements-state", JSON.stringify(state));
 }
 
-// 4) Wenn ein neuer Tag beginnt, History aktualisieren und Counter hochzählen
+// Hilfsfunktion: Datum-String → Date‐Objekt
+function parseDateString(dateStr) {
+  return new Date(new Date(dateStr).toDateString());
+}
+
+// 4) Bei jedem Rendern prüfen, ob ein neuer Tag begonnen hat.
+//    Falls ja: alle Tage zwischen lastDate und heute in state.history auffüllen.
 function resetDaily() {
-  const today = new Date().toDateString();
-  if (state.lastDate !== today) {
-    // 4.1) Speichere den gestrigen „checks“-Zustand in history
-    state.history[state.lastDate] = { ...state.checks };
+  const todayStr = new Date().toDateString();
+  if (state.lastDate !== todayStr) {
+    const lastDateObj = parseDateString(state.lastDate);
+    const todayObj = parseDateString(todayStr);
 
-    // 4.2) Häkchen für neuen Tag zurücksetzen
-    state.checks = {};
+    // 4.1) Für jedes Datum zwischen lastDate (inklusiv) und gestern (inklusiv):
+    let pointer = new Date(lastDateObj.getTime());
+    while (pointer.toDateString() !== todayObj.toDateString()) {
+      const pointerStr = pointer.toDateString();
 
-    // 4.3) Counter-Logik (Supplement-Zyklen)
+      // Falls für diesen Tag noch kein Eintrag existiert, anlegen:
+      if (!state.history[pointerStr]) {
+        // a) checks: wenn pointerStr == letzter Tag, dann state.checks (echter Wert von gestern);
+        //           sonst {} (App war an diesem Tag geschlossen).
+        const isYesterday = (pointerStr === state.lastDate);
+        const savedChecks = isYesterday ? { ...state.checks } : {};
+        // b) counters: Wir speichern den aktuellen Zähler‐Snapshot.
+        const savedCounters = { ...state.counters };
+        state.history[pointerStr] = {
+          checks: savedChecks,
+          counters: savedCounters
+        };
+      }
+
+      // pointer++ (nächster Tag)
+      pointer.setDate(pointer.getDate() + 1);
+    }
+
+    // 4.2) Eigentlichen „Übergang“ auf heute:
+    //       Zähler für heute updaten (nur Supplements, die nicht in Pause sind).
     for (const supp of supplementsBase) {
       if (!state.counters[supp.name]) state.counters[supp.name] = 0;
-      if (!isInPause(supp.name)) {
+      // Prüfen, ob heute in Pause: (Zähler vor dem Inkrement)
+      const inPauseToday = (() => {
+        const [active, pause] = supp.cycle || [];
+        if (!supp.cycle) return false;
+        const cnt = state.counters[supp.name] || 0;
+        const total = active + pause;
+        return (cnt % total) >= active;
+      })();
+      if (!inPauseToday) {
         state.counters[supp.name]++;
       }
     }
 
-    // 4.4) lastDate updaten und speichern
-    state.lastDate = today;
+    // 4.3) Reset für state.checks (heute beginnen wir frisch)
+    state.checks = {};
+    state.lastDate = todayStr;
     saveState();
   }
 }
 
-// 5) Prüfen, ob ein Supplement gerade in einer Pause ist
+// 5) Prüfen, ob ein Supplement hier und jetzt in Pause ist
 function isInPause(name) {
   const supp = supplementsBase.find(s => s.name === name);
   if (!supp?.cycle) return false;
   const [active, pause] = supp.cycle;
   const total = active + pause;
   const counter = state.counters[name] || 0;
-  return counter % total >= active;
+  return (counter % total) >= active;
 }
 
-// 6) Filtert und sortiert die Supplements je nach dayType
+// 5b) Prüfen, ob ein Supplement an einem historischen Tag in Pause war:
+//     Wir lesen den counters-Snapshot aus state.history[dateStr].counters
+function isInPauseHistoric(name, dayCounters) {
+  const supp = supplementsBase.find(s => s.name === name);
+  if (!supp?.cycle) return false;
+  const [active, pause] = supp.cycle;
+  const total = active + pause;
+  const counter = dayCounters[name] || 0;
+  return (counter % total) >= active;
+}
+
+// 6) Filtert & sortiert je nach dayType (Training vs. Ruhetag)
 function getSupplementsToShow() {
   const isRest = state.dayType === "rest";
   return supplementsBase
-    .filter(s => (isRest ? s.restDay : true))
+    .filter(s => isRest ? s.restDay : true)
     .map(s => ({ ...s }))
     .sort((a, b) => {
       if (isRest) {
@@ -86,7 +134,7 @@ function renderSupplements() {
   container.innerHTML = "";
   const supplements = getSupplementsToShow();
 
-  // Wenn Trainingstag, Whey Shake und Whey Night in korrekter Reihenfolge
+  // Falls Trainingstag: Whey Shake und Whey Night tauschen, falls nötig
   if (state.dayType === "training") {
     const wheyIndex = supplements.findIndex(s => s.name === "Whey Shake");
     const nightIndex = supplements.findIndex(s => s.name === "Whey Night");
@@ -96,31 +144,32 @@ function renderSupplements() {
     }
   }
 
-  supplements.forEach(s => {
-    const supp = { ...s };
-    if (supp.name === "Whey Shake") {
-      supp.icons[1] = state.dayType === "rest" ? "⏰" : "🤯";
+  supplements.forEach(supp => {
+    // Bei Whey Shake Icon ändern je nach dayType
+    const thisSupp = { ...supp };
+    if (thisSupp.name === "Whey Shake") {
+      thisSupp.icons[1] = (state.dayType === "rest") ? "⏰" : "🤯";
     }
 
     const div = document.createElement("div");
     div.className = "supplement";
-    if (isInPause(supp.name)) div.classList.add("paused");
+    if (isInPause(thisSupp.name)) div.classList.add("paused");
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
-    checkbox.checked = state.checks[supp.name] || false;
+    checkbox.checked = state.checks[thisSupp.name] || false;
     checkbox.onchange = () => {
-      state.checks[supp.name] = checkbox.checked;
+      state.checks[thisSupp.name] = checkbox.checked;
       saveState();
     };
 
     const left = document.createElement("div");
     left.className = "left";
-    left.innerHTML = `${supp.icons[0]} ${supp.name}`;
+    left.innerHTML = `${thisSupp.icons[0]} ${thisSupp.name}`;
 
     const right = document.createElement("div");
     right.className = "right-icon";
-    right.textContent = isInPause(supp.name) ? "⏸️" : supp.icons[1];
+    right.textContent = isInPause(thisSupp.name) ? "⏸️" : thisSupp.icons[1];
 
     div.appendChild(checkbox);
     div.appendChild(left);
@@ -133,7 +182,7 @@ function renderSupplements() {
   document.getElementById("restBtn").classList.toggle("active", state.dayType === "rest");
 }
 
-// 8) Button-Handler, um dayType zu wechseln
+// 8) Button-Handler, um zwischen Training/Ruhetag zu wechseln
 function setDayType(type) {
   state.dayType = type;
   saveState();
@@ -146,7 +195,7 @@ document.getElementById("notes").addEventListener("input", e => {
   saveState();
 });
 
-// 10) Import-Funktion (JSON) – History wird übernommen
+// 10) Import-Funktion (JSON) – übernimmt auch history und counters
 function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -163,26 +212,21 @@ function importData(event) {
   reader.readAsText(file);
 }
 
-// 11) Stats-Popup (Overlay) ein-/ausblenden, plus Body-Scroll steuern
+// 11) Stats-Popup ein-/ausblenden + Body-Scroll steuern
 function toggleStatsPopup() {
   const overlay = document.getElementById("overlayStats");
-  const isCurrentlyOpen = overlay.style.display === "flex";
-
-  if (isCurrentlyOpen) {
-    // Overlay + Popup schließen
+  const isOpen = overlay.style.display === "flex";
+  if (isOpen) {
     overlay.style.display = "none";
-    document.body.style.overflow = ""; // Body-Scroll wieder erlauben
+    document.body.style.overflow = "";
   } else {
-    // Overlay + Popup öffnen
     overlay.style.display = "flex";
-    document.body.style.overflow = "hidden"; // Body-Scroll ausschalten
-
-    // Initiales Rendern der Statistik (Woche oder Monat)
+    document.body.style.overflow = "hidden";
     renderStatsChart(currentRange);
   }
 }
 
-// Stelle sicher, dass das Popup beim ersten Laden geschlossen bleibt
+// Beim initialen Laden Popup standardmäßig schließen
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("overlayStats").style.display = "none";
 });
@@ -190,10 +234,9 @@ document.addEventListener("DOMContentLoaded", () => {
 let currentRange = "week";
 function renderStatsChart(range = "week") {
   currentRange = range;
-  console.log("▶ renderStatsChart aufgerufen mit:", range);
 
-  // 1) Bestimme "today" und erzeuge Liste der letzten N Tage (inkl. heute)
-  const days = range === "week" ? 7 : 30;
+  // 1) Baue Liste der letzten N Tage (inkl. heute)
+  const days = (range === "week") ? 7 : 30;
   const today = new Date();
   const dateStrings = [];
   for (let i = 0; i < days; i++) {
@@ -201,45 +244,64 @@ function renderStatsChart(range = "week") {
     dateStrings.push(dt.toDateString());
   }
 
-  // 2) Für jedes Supplement: Prozentsatz der Tage, an denen es eingenommen wurde
+  // 2) Berechne pro Supplement: (Anzahl eingenommener Tage) / (Anzahl berücksichtigter Tage) × 100
   const labels = [];
   const data = [];
   const colors = [];
 
   supplementsBase.forEach(supp => {
     let countTaken = 0;
+    let countConsidered = 0;
+
     dateStrings.forEach((dateStr, idx) => {
+      // a) Ermitteln, ob an diesem Tag ein Häkchen gesetzt war:
+      let hadChecked = false;
+      let dayCounters = {};
+
       if (idx === 0) {
-        // heute: state.checks
-        if (state.checks[supp.name]) countTaken++;
+        // Heute
+        hadChecked = !!state.checks[supp.name];
+        dayCounters = { ...state.counters };
       } else {
-        // ältere Tage: state.history
+        // Ältere Tage
         const entry = state.history[dateStr];
-        if (entry && entry[supp.name]) countTaken++;
+        if (entry) {
+          hadChecked = !!entry.checks[supp.name];
+          dayCounters = { ...entry.counters };
+        } else {
+          // Wenn gar kein History‐Eintrag vorliegt (App geschlossen an dem Tag),
+          // werten wir als „nicht eingenommen“, und dayCounters bleibt vom neuesten Stand
+          hadChecked = false;
+          dayCounters = { ...state.counters };
+        }
       }
+
+      // b) Prüfen, ob an diesem Tag Pause war (historisch):
+      if (!isInPauseHistoric(supp.name, dayCounters)) {
+        // Nur wenn NICHT in Pause, gehört der Tag in die Statistik:
+        countConsidered++;
+        if (hadChecked) countTaken++;
+      }
+      // Wenn Pause, zählen wir weder in countTaken noch in countConsidered
     });
 
-    const percent = Math.round((countTaken / days) * 100);
+    // c) Prozent berechnen (0, falls überhaupt keine berücksichtigten Tage)
+    const percent = (countConsidered > 0)
+      ? Math.round((countTaken / countConsidered) * 100)
+      : 0;
+
     labels.push(supp.name);
     data.push(percent);
     colors.push(supp.color);
   });
 
-  console.log("→ Labels (Supplements):", labels);
-  console.log("→ Prozentwerte über die letzten", days, "Tage:", data);
-  console.log("→ Farben:", colors);
-
   // 3) Chart erzeugen
   const canvas = document.getElementById("statsChart");
   const ctx = canvas.getContext("2d");
 
-  // Canvas-Höhe überprüfen (sollte =150px sein)
-  console.log("→ Canvas-Höhe (px):", canvas.offsetHeight);
-
-  // Vorherigen Chart zerstören, falls vorhanden
   if (window.myChart) window.myChart.destroy();
 
-  // Leere Canvas, falls alle Werte null sind
+  // 4) Falls alle Prozentwerte 0 → Hinweistext anzeigen
   const allZero = data.every(v => v === 0);
   if (allZero) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -247,7 +309,6 @@ function renderStatsChart(range = "week") {
     ctx.font = "16px Arial";
     ctx.textAlign = "center";
     ctx.fillText("Keine Daten in diesem Zeitraum", canvas.width / 2, canvas.height / 2);
-    console.log("→ Alle Werte 0: Zeige Hinweistext.");
     return;
   }
 
@@ -260,38 +321,71 @@ function renderStatsChart(range = "week") {
         data,
         backgroundColor: colors,
         borderRadius: 5,
-        barThickness: 18   // Balken ein wenig dünner, damit alles kompakter wirkt
+        barThickness: 18
       }]
     },
     options: {
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          callbacks: {
+            label: function(context) {
+              const suppName = context.label;
+              const pct = context.raw;
+              // Für den Tooltip zählen wir hier erneut kurz ab,
+              // um X von Y Tage anzuzeigen:
+              let countTaken = 0;
+              let countConsidered = 0;
+              for (let i = 0; i < days; i++) {
+                const dt = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
+                const ds = dt.toDateString();
+                let checked = false;
+                let dayCounters = {};
+
+                if (i === 0) {
+                  checked = !!state.checks[suppName];
+                  dayCounters = { ...state.counters };
+                } else {
+                  const ent = state.history[ds];
+                  if (ent) {
+                    checked = !!ent.checks[suppName];
+                    dayCounters = { ...ent.counters };
+                  } else {
+                    checked = false;
+                    dayCounters = { ...state.counters };
+                  }
+                }
+
+                if (!isInPauseHistoric(suppName, dayCounters)) {
+                  countConsidered++;
+                  if (checked) countTaken++;
+                }
+              }
+              return `${suppName} – ${countTaken} von ${countConsidered} Tagen (${pct} %)`;
+            }
+          }
+        }
       },
       scales: {
         x: {
           ticks: {
-            font: {
-              size: 9       // Schriftgröße X-Achse noch etwas kleiner
-            },
-            color: "#ffffff" // Schriftfarbe X-Achsen-Labels
+            font: { size: 9 },
+            color: "#ffffff"
           },
-          grid: {
-            display: false  // vertikale Gitterlinien unter den X-Ticks ausblenden
-          }
+          grid: { display: false }
         },
         y: {
           beginAtZero: true,
           max: 100,
           ticks: {
             stepSize: 10,
-            font: {
-              size: 9       // Schriftgröße Y-Achse
-            },
-            color: "#ffffff"  // Schriftfarbe Y-Achsen
+            font: { size: 9 },
+            color: "#ffffff"
           },
           grid: {
             color: "rgba(255,255,255,0.1)",
-            drawBorder: false // Border‐Linie auf der Y-Achse entfernen
+            lineWidth: 0.5
           }
         }
       },
@@ -299,46 +393,33 @@ function renderStatsChart(range = "week") {
       maintainAspectRatio: false
     }
   });
-
-  console.log("→ Chart-Datenfarben (final):", window.myChart.data.datasets[0].backgroundColor);
 }
 
-// 12) CSV-Export (global an window gebunden, mit Header-Namen und ohne Leerzeile)
+// 12) CSV-Export (mit deutschen Kopfzeilen, inkl. „Notizen“ am Ende)
 window.exportCSV = function() {
-  console.log("exportCSV wurde über window aufgerufen");
-
-  // 1. Kopfzeile mit den deutschen Spaltennamen
   const headers = [
-    "Supplement",   // statt "name"
-    "Aktivität",    // statt "dayType"
-    "Status",       // statt "EinnahmeStatus"
-    "Datum",        // statt "lastDate"
-    "Pause"         // statt "PauseStatus"
+    "Supplement",
+    "Aktivität",
+    "Status",
+    "Datum",
+    "Pause"
   ];
   const csvRows = [];
   csvRows.push(headers.join(","));
 
-  // 2. Pro Supplement eine Zeile mit Werten
   for (const supp of supplementsBase) {
-    const supplementName = supp.name;
-    const aktivitaet = state.dayType;
-    const status = state.checks[supplementName] ? "eingenommen" : "nicht eingenommen";
-    const datumRaw = state.lastDate;
-    const datum = `"${datumRaw}"`;
-    const pause = isInPause(supplementName) ? "Pause" : "keine Pause";
-
-    const row = [supplementName, aktivitaet, status, datum, pause];
-    csvRows.push(row.join(","));
+    const name = supp.name;
+    const akt = state.dayType;
+    const stat = state.checks[name] ? "eingenommen" : "nicht eingenommen";
+    const dat = `"${state.lastDate}"`;
+    const p = isInPause(name) ? "Pause" : "keine Pause";
+    csvRows.push([name, akt, stat, dat, p].join(","));
   }
 
-  // 3. Sofort Notizen-Zeile (kein Leerzeilen-Abschnitt)
   const notesEscaped = state.notes ? state.notes.replace(/\r?\n/g, "\\r\\n") : "";
   csvRows.push(`Notizen,"${notesEscaped}"`);
 
-  // 4. Gesamten CSV-Text zusammenfügen
   const csvString = csvRows.join("\r\n");
-
-  // 5. Download-Link erstellen und klicken
   const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -347,11 +428,7 @@ window.exportCSV = function() {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-
-  // 6. URL-Objekt wieder freigeben
-  setTimeout(() => {
-    URL.revokeObjectURL(url);
-  }, 1000);
+  setTimeout(() => { URL.revokeObjectURL(url); }, 1000);
 };
 
 // 13) Service Worker registrieren (PWA)
