@@ -233,7 +233,7 @@ function renderStatsChart(range = "week") {
   const canvas = document.getElementById("statsChart");
   const ctx = canvas.getContext("2d");
 
-  // Canvas-Höhe überprüfen (sollte =160px sein)
+  // Canvas-Höhe überprüfen (sollte =150px sein)
   console.log("→ Canvas-Höhe (px):", canvas.offsetHeight);
 
   // Vorherigen Chart zerstören, falls vorhanden
@@ -260,7 +260,7 @@ function renderStatsChart(range = "week") {
         data,
         backgroundColor: colors,
         borderRadius: 5,
-        barThickness: 20
+        barThickness: 18   // Balken ein wenig dünner, damit alles kompakter wirkt
       }]
     },
     options: {
@@ -271,9 +271,9 @@ function renderStatsChart(range = "week") {
         x: {
           ticks: {
             font: {
-              size: 10      // Schriftgröße der X-Achsen-Beschriftungen (Labels)
+              size: 9       // Schriftgröße X-Achse noch etwas kleiner
             },
-            color: "#ffffff"  // Schriftfarbe der X-Achsen-Labels
+            color: "#ffffff" // Schriftfarbe X-Achsen-Labels
           },
           grid: {
             display: false  // vertikale Gitterlinien unter den X-Ticks ausblenden
@@ -285,12 +285,13 @@ function renderStatsChart(range = "week") {
           ticks: {
             stepSize: 10,
             font: {
-              size: 10      // Schriftgröße der Y-Achsen-Beschriftungen
+              size: 9       // Schriftgröße Y-Achse
             },
-            color: "#ffffff"  // Schriftfarbe der Y-Achsen
+            color: "#ffffff"  // Schriftfarbe Y-Achsen
           },
           grid: {
-            color: "rgba(255,255,255,0.1)" // horizontale Linienfarbe (sehr dezent)
+            color: "rgba(255,255,255,0.1)",
+            drawBorder: false // Border‐Linie auf der Y-Achse entfernen
           }
         }
       },
