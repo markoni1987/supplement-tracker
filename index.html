@@ -23,7 +23,6 @@
   <textarea id="notes" placeholder="Notizen..."></textarea>
 
   <div class="button-group bottom-buttons">
-    <!-- Hier ruft der Button jetzt exportCSV() auf -->
     <button onclick="exportCSV()">💾 Exportieren</button>
     <label class="upload-button">
       📥 Importieren
@@ -31,8 +30,11 @@
     </label>
   </div>
 
-  <div id="statsPopup" class="popup">
-    <div class="popup-inner">
+  <!-- Dieses Overlay deckt den gesamten Viewport ab, sobald es aktiv ist -->
+  <div id="overlayStats" onclick="toggleStatsPopup()">
+    <!-- Klick irgendwo im dunklen Bereich schließt das Popup ebenfalls -->
+    <div id="statsPopup" onclick="event.stopPropagation()">
+      <!-- Popup-Inhalt bleibt erhalten -->
       <div class="stats-controls">
         <button onclick="renderStatsChart('week')">Woche</button>
         <button onclick="renderStatsChart('month')">Monat</button>
