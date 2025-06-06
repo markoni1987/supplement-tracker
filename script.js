@@ -4,14 +4,14 @@
 
 // 1) Definition aller Supplements und ihrer Zyklus-/Icon-Daten
 const supplementsBase = [
-  { name: "Vitamin B12", icons: ["🩸", "⏰"], color: "#e63946", restDay: true, cycle: [6, 2] },
-  { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#ffb703", restDay: true, cycle: [6, 2] },
-  { name: "D3 + K2", icons: ["🦴", "⏰"], color: "#f8f9fa", restDay: true, cycle: [8, 2] },
-  { name: "Omega 3", icons: ["🧠", "⏰"], color: "#ffafcc", restDay: true, cycle: [6, 1] },
-  { name: "Magnesium", icons: ["💤", "🌙"], color: "#adb5bd", restDay: true },
+  { name: "Vitamin B12", icons: ["🩸", "⏰"], color: "#8B0000", restDay: true, cycle: [6, 2] },
+  { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#ADFF2F", restDay: true, cycle: [6, 2] },
+  { name: "D3 + K2", icons: ["🦴", "⏰"], color: "#D3D3D3", restDay: true, cycle: [8, 2] },
+  { name: "Omega 3", icons: ["🧠", "⏰"], color: "#FF69B4", restDay: true, cycle: [6, 1] },
+  { name: "Magnesium", icons: ["💤", "🌙"], color: "#00008B", restDay: true },
   { name: "Citrullin", icons: ["💪", "🏃"], color: "#f1c40f", restDay: false },
-  { name: "Creatin", icons: ["🏋️", "🏃"], color: "#ced4da", restDay: false, cycle: [6, 2] },
-  { name: "Whey Shake", icons: ["🥤", "🤯"], color: "#89c2d9", restDay: true },
+  { name: "Creatin", icons: ["🏋️", "🏃"], color: "#696969", restDay: false, cycle: [6, 2] },
+  { name: "Whey Shake", icons: ["🥤", "🤯"], color: "#00BFFF", restDay: true },
   { name: "Whey Night", icons: ["🥤💤", "😴"], color: "#f77f00", restDay: false }
 ];
 
@@ -182,7 +182,19 @@ function renderStatsChart(range = "week") {
     const c = state.counters[s.name] || 0;
     return Math.min(100, Math.round((c % (days + 1)) / days * 100));
   });
-  const colors = supplementsBase.map(s => s.color || "#999");
+
+  // Die neuen Balkenfarben (solide, keine zusätzliche Transparenz)
+  const colors = [
+    "#8B0000",  // Vitamin B12: dunkles Blutrot
+    "#ADFF2F",  // Ashwagandha: gelblich-grünlich
+    "#D3D3D3",  // D3 + K2: helles Grau
+    "#FF69B4",  // Omega 3: leicht dunkleres Pink
+    "#00008B",  // Magnesium: dunkles, leuchtendes Blau
+    "#f1c40f",  // Citrullin (ungeändert)
+    "#696969",  // Creatin: dunkleres Grau
+    "#00BFFF",  // Whey Shake: helles leuchtendes Blau
+    "#f77f00"   // Whey Night (ungeändert)
+  ];
 
   const ctx = document.getElementById("statsChart").getContext("2d");
   if (window.myChart) window.myChart.destroy();
