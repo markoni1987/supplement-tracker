@@ -196,7 +196,7 @@ function renderStatsChart(range = "week") {
 }
 
 // ────────────────────────────────────────────
-// 12) CSV-Export (global an window gebunden, mit neuen Header-Namen)
+// 12) CSV-Export (global an window gebunden, mit neuen Header-Namen und ohne Leerzeile)
 // ────────────────────────────────────────────
 window.exportCSV = function() {
   console.log("exportCSV wurde über window aufgerufen"); // Debug-Ausgabe
@@ -225,10 +225,9 @@ window.exportCSV = function() {
     csvRows.push(row.join(","));
   }
 
-  // 3. Leerzeile und Notizen (falls vorhanden)
-  csvRows.push("");
+  // 3. Keine Leerzeile dazwischen – sofort Notizen-Zeile
   const notesEscaped = state.notes ? state.notes.replace(/\r?\n/g, "\\r\\n") : "";
-  csvRows.push(`notes,"${notesEscaped}"`);
+  csvRows.push(`Notizen,"${notesEscaped}"`);
 
   // 4. Gesamten CSV-Text zusammenfügen
   const csvString = csvRows.join("\r\n");
