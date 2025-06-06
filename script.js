@@ -8,10 +8,10 @@ const supplementsBase = [
   { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#ADFF2F", restDay: true, cycle: [6, 2] },
   { name: "D3 + K2", icons: ["🦴", "⏰"], color: "#D3D3D3", restDay: true, cycle: [8, 2] },
   { name: "Omega 3", icons: ["🧠", "⏰"], color: "#FF69B4", restDay: true, cycle: [6, 1] },
-  { name: "Magnesium", icons: ["💤", "🌙"], color: "#1E90FF", restDay: true },   // ✔ helleres Blau
+  { name: "Magnesium", icons: ["💤", "🌙"], color: "#1E90FF", restDay: true },   // helleres Blau
   { name: "Citrullin", icons: ["💪", "🏃"], color: "#f1c40f", restDay: false },
   { name: "Creatin", icons: ["🏋️", "🏃"], color: "#696969", restDay: false, cycle: [6, 2] },
-  { name: "Whey Shake", icons: ["🥤", "🤯"], color: "#87CEFA", restDay: true },  // ✔ helleres Blau
+  { name: "Whey Shake", icons: ["🥤", "🤯"], color: "#87CEFA", restDay: true },  // helleres Blau
   { name: "Whey Night", icons: ["🥤💤", "😴"], color: "#f77f00", restDay: false }
 ];
 
@@ -176,11 +176,12 @@ function toggleStatsPopup() {
 let currentRange = "week";
 function renderStatsChart(range = "week") {
   currentRange = range;
+  console.log("▶ renderStatsChart aufgerufen mit:", range);
+
   const labels = supplementsBase.map(s => s.name);
   const days = range === "week" ? 7 : 30;
   const data = supplementsBase.map(s => {
     const c = state.counters[s.name] || 0;
-    // Prozentualer Anteil über jeweilige Tage
     return Math.min(100, Math.round((c % (days + 1)) / days * 100));
   });
 
@@ -190,14 +191,19 @@ function renderStatsChart(range = "week") {
     "#ADFF2F",  // Ashwagandha: gelblich-grünlich
     "#D3D3D3",  // D3 + K2: helles Grau
     "#FF69B4",  // Omega 3: leicht dunkleres Pink
-    "#1E90FF",  // Magnesium: helles Blau (statt 00008B)
-    "#f1c40f",  // Citrullin: unverändert
+    "#1E90FF",  // Magnesium: helles Blau
+    "#f1c40f",  // Citrullin
     "#696969",  // Creatin: dunkleres Grau
-    "#87CEFA",  // Whey Shake: helles leuchtendes Blau (statt 00BFFF)
-    "#f77f00"   // Whey Night: unverändert
+    "#87CEFA",  // Whey Shake: helles leuchtendes Blau
+    "#f77f00"   // Whey Night
   ];
 
-  const ctx = document.getElementById("statsChart").getContext("2d");
+  const canvas = document.getElementById("statsChart");
+  const ctx = canvas.getContext("2d");
+
+  // Stelle sicher, dass das Canvas tatsächlich 190px hoch ist:
+  console.log("→ Canvas-Höhe (px):", canvas.offsetHeight);
+
   if (window.myChart) window.myChart.destroy();
   window.myChart = new Chart(ctx, {
     type: "bar",
@@ -218,6 +224,8 @@ function renderStatsChart(range = "week") {
       maintainAspectRatio: false
     }
   });
+
+  console.log("→ Chart-Datenfarben:", window.myChart.data.datasets[0].backgroundColor);
 }
 
 // 12) CSV-Export (global an window gebunden, mit Header-Namen und ohne Leerzeile)
