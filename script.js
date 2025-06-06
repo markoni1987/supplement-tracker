@@ -5,7 +5,7 @@
 // 1) Definition aller Supplements und ihrer Zyklus-/Icon-Daten
 const supplementsBase = [
   { name: "Vitamin B12", icons: ["🩸", "⏰"], color: "#8B0000", restDay: true, cycle: [6, 2] },
-  { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#ADFF2F", restDay: true, cycle: [6, 2] },
+  { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#9ACD32", restDay: true, cycle: [6, 2] }, // dunkleres Grün
   { name: "D3 + K2", icons: ["🦴", "⏰"], color: "#D3D3D3", restDay: true, cycle: [8, 2] },
   { name: "Omega 3", icons: ["🧠", "⏰"], color: "#FF69B4", restDay: true, cycle: [6, 1] },
   { name: "Magnesium", icons: ["💤", "🌙"], color: "#1E90FF", restDay: true },   // helleres Blau
@@ -173,38 +173,52 @@ function toggleStatsPopup() {
   }
 }
 
+// Stelle sicher, dass das Popup beim ersten Laden geschlossen bleibt
+document.addEventListener("DOMContentLoaded", () => {
+  const overlay = document.getElementById("overlayStats");
+  overlay.style.display = "none";
+});
+
 let currentRange = "week";
 function renderStatsChart(range = "week") {
   currentRange = range;
   console.log("▶ renderStatsChart aufgerufen mit:", range);
 
-  const labels = supplementsBase.map(s => s.name);
+  // Filter: nur Supplements, die HEUTE per Checkbox als eingenommen markiert sind
+  const selectedSupplements = supplementsBase.filter(supp => state.checks[supp.name]);
+
+  // Labels und Daten nur für ausgewählte Supplements
+  const labels = selectedSupplements.map(s => s.name);
   const days = range === "week" ? 7 : 30;
-  const data = supplementsBase.map(s => {
+  const data = selectedSupplements.map(s => {
     const c = state.counters[s.name] || 0;
     return Math.min(100, Math.round((c % (days + 1)) / days * 100));
   });
 
-  // Die überarbeiteten Balkenfarben:
-  const colors = [
-    "#8B0000",  // Vitamin B12: dunkles Blutrot
-    "#ADFF2F",  // Ashwagandha: gelblich-grünlich
-    "#D3D3D3",  // D3 + K2: helles Grau
-    "#FF69B4",  // Omega 3: leicht dunkleres Pink
-    "#1E90FF",  // Magnesium: helles Blau
-    "#f1c40f",  // Citrullin
-    "#696969",  // Creatin: dunkleres Grau
-    "#87CEFA",  // Whey Shake: helles leuchtendes Blau
-    "#f77f00"   // Whey Night
-  ];
+  // Die überarbeiteten Balkenfarben (eine Farbe pro ausgewähltes Supplement)
+  const colors = selectedSupplements.map(s => s.color);
 
   const canvas = document.getElementById("statsChart");
   const ctx = canvas.getContext("2d");
 
-  // Stelle sicher, dass das Canvas tatsächlich 190px hoch ist:
+  // Prüfe, ob das Canvas korrekt 190px hoch ist
   console.log("→ Canvas-Höhe (px):", canvas.offsetHeight);
 
+  // Zerstöre vorherigen Chart, falls vorhanden
   if (window.myChart) window.myChart.destroy();
+
+  // Falls kein Supplement ausgewählt ist, zeichne ein leeres Chart mit Hinweistext
+  if (labels.length === 0) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#fff";
+    ctx.font = "16px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Keine Supplement-Daten ausgewählt", canvas.width / 2, canvas.height / 2);
+    console.log("→ Kein Supplement ausgewählt: Chart bleibt leer.");
+    return;
+  }
+
+  // Ansonsten: Erstelle das Chart mit Daten und Farben
   window.myChart = new Chart(ctx, {
     type: "bar",
     data: {
