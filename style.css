@@ -117,11 +117,11 @@ textarea {
    Overlay (ganze Seite, halbdurchsichtig) 
    -------------------------------------------- */
 #overlayStats {
-  display: none;              /* initial unsichtbar */
+  display: none;               /* initial unsichtbar */
   position: fixed;
-  inset: 0;                   /* oben=0, rechts=0, unten=0, links=0 */
+  inset: 0;                    /* oben=0, rechts=0, unten=0, links=0 */
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;               /* über allen anderen Inhalten */
+  z-index: 999;                /* über allen anderen Inhalten */
 
   /* Popup zentrieren */
   display: flex;
@@ -138,15 +138,15 @@ textarea {
   border-radius: 10px;
   box-shadow: 0 0 10px #000;
   max-width: 600px;
-  width: 90%;
-  max-height: 80%;
-  overflow-y: auto;          /* nur Inhalt im Popup scrollt */
+  width: 85%;                  /* etwas schmaler, damit mehr Platz bleibt */
+  max-height: 60%;             /* deutlich verkürzt, um Scrollen zu vermeiden */
+  overflow-y: auto;            /* nur Inhalt im Popup scrollt */
   color: #fff;
 }
 
-/* Canvas-Feld im Popup */
+/* Canvas-Feld im Popup – Höhe verkleinert */
 #statsChart {
-  height: 300px;
+  height: 200px;               /* statt 300px, damit alles sichtbar ist */
   width: 100%;
   background-color: transparent;
   display: block;
@@ -180,7 +180,7 @@ textarea {
    Stil für das Upload-Label („Importieren“)
    -------------------------------------------- */
 .upload-button input[type="file"] {
-  display: none; /* Versteckt das Dateieingabe-Feld */
+  display: none;               /* Versteckt das Dateieingabe-Feld */
 }
 
 /* --------------------------------------------
@@ -188,5 +188,5 @@ textarea {
    bleibt zentriert durch .button-group
    -------------------------------------------- */
 .bottom-buttons {
-  margin-top: 1rem; /* optionaler Abstand nach oben */
+  margin-top: 1rem;            /* optionaler Abstand nach oben */
 }
