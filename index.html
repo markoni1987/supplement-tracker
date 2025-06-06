@@ -23,7 +23,7 @@
   <textarea id="notes" placeholder="Notizen..."></textarea>
 
   <div class="button-group bottom-buttons">
-    <!-- Wichtig: onclick ruft exportCSV(), nicht exportData() -->
+    <!-- Hier ruft der Button jetzt exportCSV() auf -->
     <button onclick="exportCSV()">💾 Exportieren</button>
     <label class="upload-button">
       📥 Importieren
@@ -42,9 +42,9 @@
     </div>
   </div>
 
-  <!-- Chart.js für die Diagramme -->
+  <!-- Chart.js laden -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Dein Hauptskript -->
+  <!-- Hauptskript -->
   <script src="script.js"></script>
 </body>
 </html>
