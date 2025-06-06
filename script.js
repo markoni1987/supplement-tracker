@@ -8,10 +8,10 @@ const supplementsBase = [
   { name: "Ashwagandha", icons: ["🧘", "⏰"], color: "#ADFF2F", restDay: true, cycle: [6, 2] },
   { name: "D3 + K2", icons: ["🦴", "⏰"], color: "#D3D3D3", restDay: true, cycle: [8, 2] },
   { name: "Omega 3", icons: ["🧠", "⏰"], color: "#FF69B4", restDay: true, cycle: [6, 1] },
-  { name: "Magnesium", icons: ["💤", "🌙"], color: "#00008B", restDay: true },
+  { name: "Magnesium", icons: ["💤", "🌙"], color: "#1E90FF", restDay: true },   // ✔ helleres Blau
   { name: "Citrullin", icons: ["💪", "🏃"], color: "#f1c40f", restDay: false },
   { name: "Creatin", icons: ["🏋️", "🏃"], color: "#696969", restDay: false, cycle: [6, 2] },
-  { name: "Whey Shake", icons: ["🥤", "🤯"], color: "#00BFFF", restDay: true },
+  { name: "Whey Shake", icons: ["🥤", "🤯"], color: "#87CEFA", restDay: true },  // ✔ helleres Blau
   { name: "Whey Night", icons: ["🥤💤", "😴"], color: "#f77f00", restDay: false }
 ];
 
@@ -180,20 +180,21 @@ function renderStatsChart(range = "week") {
   const days = range === "week" ? 7 : 30;
   const data = supplementsBase.map(s => {
     const c = state.counters[s.name] || 0;
+    // Prozentualer Anteil über jeweilige Tage
     return Math.min(100, Math.round((c % (days + 1)) / days * 100));
   });
 
-  // Die neuen Balkenfarben – aus deinem Lastmapping
+  // Die überarbeiteten Balkenfarben:
   const colors = [
     "#8B0000",  // Vitamin B12: dunkles Blutrot
     "#ADFF2F",  // Ashwagandha: gelblich-grünlich
     "#D3D3D3",  // D3 + K2: helles Grau
     "#FF69B4",  // Omega 3: leicht dunkleres Pink
-    "#00008B",  // Magnesium: dunkles, leuchtendes Blau
-    "#f1c40f",  // Citrullin (unverändert)
+    "#1E90FF",  // Magnesium: helles Blau (statt 00008B)
+    "#f1c40f",  // Citrullin: unverändert
     "#696969",  // Creatin: dunkleres Grau
-    "#00BFFF",  // Whey Shake: helles leuchtendes Blau
-    "#f77f00"   // Whey Night (unverändert)
+    "#87CEFA",  // Whey Shake: helles leuchtendes Blau (statt 00BFFF)
+    "#f77f00"   // Whey Night: unverändert
   ];
 
   const ctx = document.getElementById("statsChart").getContext("2d");
