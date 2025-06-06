@@ -1,5 +1,5 @@
 /* --------------------------------------------
-   style.css – Chart minimal höher (180px)
+   style.css (mit dünnen Gitterlinien für Statistik)
    -------------------------------------------- */
 
 /* --------------------------------------------
@@ -121,8 +121,7 @@ textarea {
 }
 
 /* --------------------------------------------
-   Untere Button-Gruppe (Export & Import)
-   bleibt zentriert durch .button-group
+   Untere Button-Gruppe (Export & Import) zentriert
    -------------------------------------------- */
 .bottom-buttons {
   margin-top: 1rem;
@@ -150,10 +149,10 @@ textarea {
   padding: 1rem;
   border-radius: 10px;
   box-shadow: 0 0 10px #000000;
-  max-width: 540px;            /* etwas schmaler */
+  max-width: 540px;
   width: 80%;
-  max-height: 39%;             /* angepasst, damit 180px Chart reinpasst */
-  overflow-y: hidden;          /* kein Scrollen nötig */
+  max-height: 39%;
+  overflow-y: hidden;
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -167,20 +166,20 @@ textarea {
 .stats-controls {
   display: flex;
   justify-content: center;
-  gap: 0.2rem;                 /* nochmals geringerer Abstand */
-  margin: 0 auto 0.3rem auto;  /* zentriert, kleinerer Abstand nach unten */
+  gap: 0.2rem;
+  margin: 0 auto 0.3rem auto;
   width: 100%;
 }
 
 .stats-controls button {
   background-color: #444444;
   border: none;
-  padding: 0.2rem 0.4rem;      /* weiter verkleinerte Innenabstände */
+  padding: 0.2rem 0.4rem;
   border-radius: 8px;
   color: #ffffff;
   cursor: pointer;
-  font-size: 0.8rem;           /* noch kleinere Schrift */
-  min-width: 45px;             /* geringere Mindestbreite */
+  font-size: 0.8rem;
+  min-width: 45px;
   transition: background-color 0.2s ease;
 }
 
@@ -189,12 +188,21 @@ textarea {
 }
 
 /* --------------------------------------------
-   Canvas für Chart – minimal höher (180px)
+   Canvas für Chart (min. höherer Wert)
    -------------------------------------------- */
 #statsChart {
   display: block;
   margin-top: 0.5rem;
   background-color: transparent;
   width: 100% !important;
-  height: 180px !important;    /* von 170px auf 180px erhöht */
+  height: 180px !important;
+}
+
+/* --------------------------------------------
+   Feinere horizontale Gitterlinien im Chart
+   -------------------------------------------- */
+canvas#statsChart {
+  /* Die eigentliche Linienfarbe und -stärke wird im JS konfiguriert:
+     grid.color = "rgba(255,255,255,0.1)",
+     grid.lineWidth = 0.5 */
 }
