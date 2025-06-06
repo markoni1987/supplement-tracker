@@ -154,11 +154,23 @@ function importData(event) {
   reader.readAsText(file);
 }
 
-// 11) Stats-Popup ein-/ausblenden
+// 11) Stats-Popup ein-/ausblenden, plus Body-Scroll steuern
 function toggleStatsPopup() {
   const popup = document.getElementById("statsPopup");
-  popup.style.display = popup.style.display === "none" ? "block" : "none";
-  renderStatsChart(currentRange);
+  const isCurrentlyOpen = popup.style.display === "block";
+
+  if (isCurrentlyOpen) {
+    // Popup wird geschlossen
+    popup.style.display = "none";
+    document.body.style.overflow = ""; // Body-Scroll wieder erlauben
+  } else {
+    // Popup wird geöffnet
+    popup.style.display = "block";
+    document.body.style.overflow = "hidden"; // Body-Scroll ausschalten
+
+    // Anzeige initiale Statistik
+    renderStatsChart(currentRange);
+  }
 }
 
 let currentRange = "week";
@@ -195,9 +207,7 @@ function renderStatsChart(range = "week") {
   });
 }
 
-// ────────────────────────────────────────────
 // 12) CSV-Export (global an window gebunden, mit neuen Header-Namen und ohne Leerzeile)
-// ────────────────────────────────────────────
 window.exportCSV = function() {
   console.log("exportCSV wurde über window aufgerufen"); // Debug-Ausgabe
 
@@ -225,7 +235,7 @@ window.exportCSV = function() {
     csvRows.push(row.join(","));
   }
 
-  // 3. Keine Leerzeile dazwischen – sofort Notizen-Zeile
+  // 3. Sofort Notizen-Zeile (kein Leerzeilen-Abschnitt)
   const notesEscaped = state.notes ? state.notes.replace(/\r?\n/g, "\\r\\n") : "";
   csvRows.push(`Notizen,"${notesEscaped}"`);
 
@@ -247,7 +257,6 @@ window.exportCSV = function() {
     URL.revokeObjectURL(url);
   }, 1000);
 };
-// ────────────────────────────────────────────
 
 // 13) Service Worker registrieren (PWA)
 if ('serviceWorker' in navigator) {
